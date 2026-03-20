@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 //  設定區 — 部署時修改這裡
 // ══════════════════════════════════════════════════════════════
 const CONFIG = {
-  LIFF_ID:    "YOUR_LIFF_ID",            // LINE Developers 取得
+  LIFF_ID:    "2009551849-ABLT50IT",            // LINE Developers 取得
   API_BASE:   "https://你的伺服器網址.com", // server.js 的網址
   WS_URL:     "wss://你的伺服器網址.com",  // WebSocket（即時狀態）
 };
@@ -162,7 +162,7 @@ function TopBar({ title, onBack, right }) {
         ? <button onClick={onBack} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer", lineHeight: 1, padding: "0 4px" }}>‹</button>
         : <div style={{ width: 30 }} />}
       <div style={{ flex: 1, textAlign: "center" }}>
-        <div style={{ color: "#666", fontSize: 10, letterSpacing: 2, fontWeight: 700 }}>清新洗衣</div>
+        <div style={{ color: "#666", fontSize: 10, letterSpacing: 2, fontWeight: 700 }}>悠洗洗衣</div>
         <div style={{ color: "#fff", fontWeight: 800, fontSize: 15 }}>{title}</div>
       </div>
       {right || <div style={{ width: 30 }} />}
@@ -432,7 +432,7 @@ function PayPage({ machine, store, user, onBack, onPaid, onToast }) {
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <WashIcon size={40} status="idle" />
           <div>
-            <div style={{ fontWeight: 800, fontSize: 15, color: C.dark }}>清新洗衣</div>
+            <div style={{ fontWeight: 800, fontSize: 15, color: C.dark }}>悠洗洗衣</div>
             <div style={{ fontSize: 13, color: C.muted }}>
               {store.name} · {machine.name}（{machine.size}）
             </div>
@@ -935,7 +935,7 @@ export default function App() {
         @keyframes dot{from{opacity:.2}to{opacity:1}}`}</style>
       <div style={{ minHeight: "100vh", background: C.dark, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }}>
         <div style={{ width: 68, height: 68, borderRadius: 20, background: C.line, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 34 }}>🌊</div>
-        <div style={{ color: "#fff", fontWeight: 800, fontSize: 20 }}>清新洗衣</div>
+        <div style={{ color: "#fff", fontWeight: 800, fontSize: 20 }}>悠洗洗衣</div>
         <div style={{ color: "#666", fontSize: 13 }}>正在透過 LINE 登入...</div>
         <div style={{ display: "flex", gap: 6 }}>
           {[0, 1, 2].map(i => (
