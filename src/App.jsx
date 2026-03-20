@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-const LIFF_ID = import.meta.env.VITE_LIFF_ID || "2009551849-ABLT50IT";
+const LIFF_ID = "2009552592-xkDKSJ1Y";
 export default function App() {
   const [status, setStatus] = useState("loading");
   const [user, setUser] = useState(null);
