@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect } from "react";
 
 const LIFF_ID = import.meta.env.VITE_LIFF_ID || "2009552592-xkDKSJ1Y";
 const API = import.meta.env.VITE_API_BASE || "https://laundry-backend-production-efa4.up.railway.app";
@@ -173,8 +173,8 @@ function HomePage({ user, onUse }) {
   );
 }
 
-// 付款頁
-function PayPage({ machine, store, user, onBack, onPaid, onToast }) {
+// 付款頁 - 串接 LINE Pay
+function PayPage({ machine, store, user, onBack, onToast }) {
   const [modeId,  setModeId]  = useState("standard");
   const [addons,  setAddons]  = useState([]);
   const [extend,  setExtend]  = useState(0);
@@ -188,13 +188,28 @@ function PayPage({ machine, store, user, onBack, onPaid, onToast }) {
   const handlePay = async () => {
     setLoading(true);
     try {
-      await apiFetch("POST","/api/orders/create",{
+      // 步驟1：建立訂單
+      const order = await apiFetch("POST","/api/orders/create",{
         lineUserId:user.userId, storeId:store.id, machineId:machine.id,
         mode:modeId, addons, extendMin:extend, temp, totalAmount:total,
       });
-      onPaid({ mode, total, machine, store });
+
+      // 步驟2：建立 LINE Pay 付款請求
+      const payment = await apiFetch("POST","/api/payment/request",{
+        orderId: order.orderId,
+        amount: total,
+        orderName: `${store.name} ${machine.name} ${mode.label}`,
+      });
+
+      if (payment.success && payment.paymentUrl) {
+        // 步驟3：跳轉到 LINE Pay 付款頁
+        window.location.href = payment.paymentUrl;
+      } else {
+        onToast("LINE Pay 建立失敗：" + (payment.error || "未知錯誤"), "error");
+        setLoading(false);
+      }
     } catch(e) {
-      onToast("建立訂單失敗："+e.message,"error");
+      onToast("付款請求失敗："+e.message, "error");
       setLoading(false);
     }
   };
@@ -265,28 +280,43 @@ function PayPage({ machine, store, user, onBack, onPaid, onToast }) {
           padding:"14px 28px",borderRadius:14,border:"none",
           background:loading?"#555":S.white,color:S.dark,
           fontSize:15,fontWeight:800,cursor:loading?"not-allowed":"pointer",fontFamily:"inherit"}}>
-          {loading?"處理中...":"確認付款"}
+          {loading?"跳轉中...":"LINE Pay 付款"}
         </button>
       </div>
     </div>
   );
 }
 
-// 成功頁
-function SuccessPage({ result, onTrack }) {
+// 付款結果頁（LINE Pay 跳回後顯示）
+function PaymentResultPage() {
+  const params = new URLSearchParams(window.location.search);
+  const status  = params.get("status");
+  const orderId = params.get("orderId");
+  const msg     = params.get("msg");
+
+  const isSuccess = status === "success";
+  const isCancel  = status === "cancel";
+
   return (
     <div style={{minHeight:"100vh",background:S.dark,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:32,gap:22}}>
-      <div style={{fontSize:80}}>🎉</div>
+      <div style={{fontSize:80}}>{isSuccess?"🎉":isCancel?"😕":"❌"}</div>
       <div style={{textAlign:"center"}}>
-        <div style={{color:S.green,fontSize:26,fontWeight:800,marginBottom:6}}>訂單建立成功！</div>
-        <div style={{color:"#aaa",fontSize:14}}>{result.machine.name} · {result.mode.label}</div>
-        <div style={{color:"#666",fontSize:13,marginTop:4}}>{result.store.name} · NT${result.total}</div>
+        <div style={{color:isSuccess?S.green:"#EF4444",fontSize:26,fontWeight:800,marginBottom:6}}>
+          {isSuccess?"付款成功！":isCancel?"已取消付款":"付款失敗"}
+        </div>
+        {orderId && <div style={{color:"#aaa",fontSize:13,marginTop:4}}>訂單編號：{orderId}</div>}
+        {msg && <div style={{color:"#888",fontSize:12,marginTop:8}}>{decodeURIComponent(msg)}</div>}
+        {isSuccess && (
+          <div style={{background:"#1C1C1E",borderRadius:16,padding:18,marginTop:16,textAlign:"center"}}>
+            <div style={{color:"#aaa",fontSize:13}}>付款完成，機器將自動啟動</div>
+          </div>
+        )}
       </div>
-      <div style={{background:"#1C1C1E",borderRadius:16,padding:18,width:"100%",maxWidth:320,textAlign:"center"}}>
-        <div style={{color:"#aaa",fontSize:13}}>付款完成後機器將自動啟動</div>
-      </div>
-      <button onClick={onTrack} style={{padding:"14px 0",borderRadius:14,border:"none",background:S.white,color:S.dark,fontSize:15,fontWeight:800,cursor:"pointer",fontFamily:"inherit",width:"100%",maxWidth:320}}>
-        查看訂單狀態
+      <button onClick={()=>window.location.href="/"} style={{
+        padding:"14px 0",borderRadius:14,border:"none",
+        background:S.white,color:S.dark,fontSize:15,fontWeight:800,
+        cursor:"pointer",fontFamily:"inherit",width:"100%",maxWidth:320}}>
+        回到首頁
       </button>
     </div>
   );
@@ -312,11 +342,11 @@ function OrdersPage({ user }) {
             <div>目前沒有使用紀錄</div>
           </div>
         ) : orders.map(o=>{
-          const isDone=o.status==="done", isRunning=o.status==="running";
+          const isPaid=o.status==="paid", isDone=o.status==="done", isRunning=o.status==="running";
           return (
             <Card key={o.id}>
               <div style={{display:"flex",alignItems:"center",gap:12}}>
-                <div style={{fontSize:36}}>{isDone?"✅":isRunning?"🔄":"🫧"}</div>
+                <div style={{fontSize:36}}>{isDone?"✅":isRunning?"🔄":isPaid?"💳":"🫧"}</div>
                 <div style={{flex:1}}>
                   <div style={{fontWeight:800,fontSize:14}}>{o.machine_name}</div>
                   <div style={{fontSize:12,color:S.muted}}>{o.store_name} · {o.mode}</div>
@@ -325,9 +355,9 @@ function OrdersPage({ user }) {
                 <div style={{textAlign:"right"}}>
                   <div style={{fontWeight:800}}>NT${o.total_amount}</div>
                   <span style={{fontSize:11,padding:"2px 8px",borderRadius:20,fontWeight:700,
-                    background:isDone?S.tealL:isRunning?S.orangeL:"#f3f4f6",
-                    color:isDone?S.teal:isRunning?S.orange:S.muted}}>
-                    {isDone?"完成":isRunning?"洗衣中":"待付款"}
+                    background:isDone?S.tealL:isRunning||isPaid?S.orangeL:"#f3f4f6",
+                    color:isDone?S.teal:isRunning||isPaid?S.orange:S.muted}}>
+                    {isDone?"完成":isRunning?"洗衣中":isPaid?"已付款":"待付款"}
                   </span>
                 </div>
               </div>
@@ -393,9 +423,11 @@ export default function App() {
   const [user,    setUser]    = useState(null);
   const [tab,     setTab]     = useState("home");
   const [payData, setPayData] = useState(null);
-  const [success, setSuccess] = useState(null);
   const [toast,   setToast]   = useState(null);
   const [error,   setError]   = useState("");
+
+  // 判斷是否為付款結果頁
+  const isPaymentResult = window.location.pathname.includes("payment-result");
 
   const notify = (msg, type) => {
     setToast({msg, type:type||"ok"});
@@ -403,6 +435,7 @@ export default function App() {
   };
 
   useEffect(()=>{
+    if (isPaymentResult) { setReady(true); return; }
     (async()=>{
       try {
         await liff.init({ liffId: LIFF_ID });
@@ -422,6 +455,9 @@ export default function App() {
     </div>
   );
 
+  // 付款結果頁不需要登入
+  if (isPaymentResult) return <PaymentResultPage />;
+
   if (error||!user) return (
     <div style={{minHeight:"100vh",background:S.dark,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:32}}>
       <div style={{fontSize:48}}>⚠️</div>
@@ -439,17 +475,11 @@ export default function App() {
         </div>
       )}
       <div style={{maxWidth:480,margin:"0 auto",minHeight:"100vh",position:"relative"}}>
-        {payData&&!success&&(
+        {payData&&(
           <div style={{position:"fixed",inset:0,zIndex:200,maxWidth:480,margin:"0 auto",overflowY:"auto",background:S.bg}}>
             <PayPage machine={payData.machine} store={payData.store} user={user}
               onBack={()=>setPayData(null)}
-              onPaid={r=>{setSuccess(r);setPayData(null);}}
               onToast={notify}/>
-          </div>
-        )}
-        {success&&(
-          <div style={{position:"fixed",inset:0,zIndex:300,maxWidth:480,margin:"0 auto"}}>
-            <SuccessPage result={success} onTrack={()=>{setSuccess(null);setTab("orders");}}/>
           </div>
         )}
         <div style={{paddingBottom:64}}>
