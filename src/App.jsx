@@ -20,11 +20,11 @@ const MODES = [
 
 // ─── 店家資料 ───
 const STORES = [
-  { id: 's1', name: '悠洗自助洗衣',           addr: '嘉義市東區文雅街181號',       machines: 6 },
-  { id: 's2', name: '吼你洗自助洗衣(玉清店)', addr: '苗栗縣苗栗市玉清路51號',      machines: 6 },
-  { id: 's3', name: '吼你洗自助洗衣(農會店)', addr: '苗栗縣苗栗市為公路290號',     machines: 6 },
-  { id: 's4', name: '熊愛洗自助洗衣',         addr: '台中市西屯區福聯街22巷2號',    machines: 6 },
-  { id: 's5', name: '上好洗自助洗衣',         addr: '高雄市鳳山區北平路214號',      machines: 6 },
+  { id: 's1', name: '悠洗自助洗衣',           addr: '嘉義市東區文雅街181號',       machines: 6, dryers: 2 },
+  { id: 's2', name: '吼你洗自助洗衣(玉清店)', addr: '苗栗縣苗栗市玉清路51號',      machines: 6, dryers: 2 },
+  { id: 's3', name: '吼你洗自助洗衣(農會店)', addr: '苗栗縣苗栗市為公路290號',     machines: 6, dryers: 2 },
+  { id: 's4', name: '熊愛洗自助洗衣',         addr: '台中市西屯區福聯街22巷2號',    machines: 6, dryers: 2 },
+  { id: 's5', name: '上好洗自助洗衣',         addr: '高雄市鳳山區北平路214號',      machines: 6, dryers: 2 },
 ];
 
 // ─── 預設優惠券 ───
@@ -1705,17 +1705,39 @@ function ClockIcon() {
 }
 
 // Washer SVG icon
-function WasherIcon({ running }) {
+function WasherIcon({ running, size = 36 }) {
+  const s = size;
   return (
-    <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
-      <rect x="3" y="2" width="30" height="32" rx="4" stroke={running ? '#FF6B2B' : '#8888AA'} strokeWidth="2" fill="none" />
-      <circle cx="18" cy="20" r="8" stroke={running ? '#FF6B2B' : '#8888AA'} strokeWidth="2" fill="none" />
-      {running && <circle cx="18" cy="20" r="4" fill="#FF6B2B" opacity="0.3">
-        <animateTransform attributeName="transform" type="rotate" from="0 18 20" to="360 18 20" dur="2s" repeatCount="indefinite" />
+    <svg width={s} height={s} viewBox="0 0 48 48" fill="none">
+      <rect x="4" y="2" width="40" height="44" rx="5" stroke="#333" strokeWidth="2.5" fill="#FFF" />
+      <circle cx="13" cy="10" r="2" fill="#333" />
+      <circle cx="19" cy="10" r="2" fill="#333" />
+      <rect x="27" y="7.5" width="10" height="5" rx="2.5" stroke="#333" strokeWidth="2" fill="none" />
+      <circle cx="40" cy="10" r="1.8" fill="#333" />
+      <line x1="4" y1="16" x2="44" y2="16" stroke="#333" strokeWidth="1.5" />
+      <circle cx="24" cy="30" r="12" stroke="#333" strokeWidth="2.5" fill="none" />
+      <path d="M24 18a12 12 0 010 24c0-6.6-5.4-12-12-12a12 12 0 0112-12z" fill="#4A9FE5" />
+      <path d="M24 42a12 12 0 010-24c0 6.6 5.4 12 12 12a12 12 0 01-12 12z" fill="#E8943A" />
+      {running && <circle cx="24" cy="30" r="6" fill="rgba(255,255,255,0.3)">
+        <animateTransform attributeName="transform" type="rotate" from="0 24 30" to="360 24 30" dur="2s" repeatCount="indefinite" />
       </circle>}
-      <circle cx="10" cy="7" r="1.5" fill={running ? '#FF6B2B' : '#B0B0C0'} />
-      <circle cx="15" cy="7" r="1.5" fill={running ? '#FF6B2B' : '#B0B0C0'} />
-      <rect x="22" y="5.5" width="6" height="3" rx="1.5" stroke={running ? '#FF6B2B' : '#B0B0C0'} strokeWidth="1" fill="none" />
+    </svg>
+  );
+}
+function DryerIcon({ size = 36 }) {
+  const s = size;
+  return (
+    <svg width={s} height={s} viewBox="0 0 48 48" fill="none">
+      <rect x="4" y="2" width="40" height="44" rx="5" stroke="#333" strokeWidth="2.5" fill="#FFF" />
+      <circle cx="13" cy="10" r="2" fill="#333" />
+      <circle cx="19" cy="10" r="2" fill="#333" />
+      <rect x="27" y="7.5" width="10" height="5" rx="2.5" stroke="#333" strokeWidth="2" fill="none" />
+      <circle cx="40" cy="10" r="1.8" fill="#333" />
+      <line x1="4" y1="16" x2="44" y2="16" stroke="#333" strokeWidth="1.5" />
+      <circle cx="24" cy="30" r="12" stroke="#333" strokeWidth="2.5" fill="none" />
+      <path d="M18 24c2-3 4 0 6-3s4 0 6-3" stroke="#E8943A" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+      <path d="M18 30c2-3 4 0 6-3s4 0 6-3" stroke="#E8943A" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+      <path d="M18 36c2-3 4 0 6-3s4 0 6-3" stroke="#E8943A" strokeWidth="2.5" strokeLinecap="round" fill="none" />
     </svg>
   );
 }
@@ -2570,38 +2592,109 @@ export default function App() {
 
               {screen === 'machines' && selectedStore && (
                 <>
-                  <button className="back-btn" onClick={goBack}>← 返回店家</button>
-                  <div className="sec-title">{selectedStore.name}</div>
-                  <div className="section-divider">
-                    <span className="section-divider-text">洗脫烘一機完成</span>
+                  {/* Search bar */}
+                  <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: 10, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                    <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 15 }}>請輸入門市</span>
                   </div>
-                  <div className="machine-list" style={{ boxShadow: 'var(--shadow)', borderRadius: 'var(--radius)' }}>
+
+                  {/* Store cards */}
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 20, overflowX: 'auto', paddingBottom: 4 }}>
+                    {STORES.map(store => (
+                      <div key={store.id} onClick={() => handleStoreSelect(store)}
+                        style={{
+                          minWidth: 160, borderRadius: 14, padding: '16px 14px',
+                          background: selectedStore?.id === store.id ? '#FFF' : '#1A1A1A',
+                          color: selectedStore?.id === store.id ? '#1A1A1A' : '#FFF',
+                          border: selectedStore?.id === store.id ? '2px solid #C8A84E' : '1px solid rgba(255,255,255,0.1)',
+                          cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 10
+                        }}>
+                        <div style={{ fontSize: 15, fontWeight: 700 }}>{store.name.replace('自助洗衣','').replace('(','').replace(')','')}</div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                          <button style={{
+                            padding: '6px 14px', borderRadius: 20, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                            background: selectedStore?.id === store.id ? '#1A1A1A' : 'transparent',
+                            color: selectedStore?.id === store.id ? '#FFF' : 'rgba(255,255,255,0.6)',
+                            border: selectedStore?.id === store.id ? 'none' : '1px solid rgba(255,255,255,0.2)',
+                            fontFamily: 'inherit'
+                          }}>
+                            {selectedStore?.id === store.id ? '選擇 ✓' : '選擇'}
+                          </button>
+                          <WasherIcon size={40} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Washer-dryer machines */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {Array.from({ length: selectedStore.machines }, (_, i) => {
                       const mid = `${selectedStore.id}-m${i + 1}`;
                       const state = getMachineState(mid);
                       const isRunning = state.status === 'running';
                       const isOffline = state.status === 'offline';
                       return (
-                        <div key={mid} className="machine-row" onClick={() => handleMachineSelect(mid)}>
-                          <div className="machine-icon-box">
-                            <WasherIcon running={isRunning} />
-                          </div>
-                          <div className="machine-info">
-                            <div className="machine-name">洗脫烘{i + 1}號(中型)</div>
+                        <div key={mid} style={{
+                          background: '#FFF', borderRadius: 14, padding: '16px 18px',
+                          display: 'flex', alignItems: 'center', gap: 14
+                        }} onClick={() => !isRunning && !isOffline && handleMachineSelect(mid)}>
+                          <WasherIcon running={isRunning} size={44} />
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: 16, fontWeight: 700, color: '#1A1A1A' }}>洗脫烘{i + 1}號(大型)</div>
                             {isRunning && state.remaining > 0 && (
-                              <div className="machine-timer">
-                                <ClockIcon /> {formatTime(state.remaining)}
+                              <div style={{ fontSize: 13, color: '#888', marginTop: 3, display: 'flex', alignItems: 'center', gap: 4 }}>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                                {formatTime(state.remaining)}
                               </div>
                             )}
                           </div>
-                          <div className="machine-actions">
+                          <div style={{ display: 'flex', gap: 6 }}>
                             {isRunning ? (
                               <>
                                 <button className="m-btn m-btn-running">運轉</button>
-                                <button className="m-btn m-btn-extend">烘乾<br/>延長</button>
+                                <button className="m-btn m-btn-extend" onClick={e => { e.stopPropagation(); handleMachineSelect(mid); }}>烘乾<br/>延長</button>
                               </>
                             ) : isOffline ? (
                               <button className="m-btn m-btn-offline">維修</button>
+                            ) : (
+                              <button className="m-btn m-btn-use">使用</button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Dryer section divider */}
+                  <div className="section-divider" style={{ margin: '20px 0 12px' }}>
+                    <span className="section-divider-text">烘乾機</span>
+                  </div>
+
+                  {/* Dryer machines */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
+                    {Array.from({ length: selectedStore.dryers || 2 }, (_, i) => {
+                      const dryerNum = selectedStore.machines + i + 1;
+                      const did = `${selectedStore.id}-d${i + 1}`;
+                      const state = getMachineState(did);
+                      const isRunning = state.status === 'running';
+                      return (
+                        <div key={did} style={{
+                          background: '#FFF', borderRadius: 14, padding: '16px 18px',
+                          display: 'flex', alignItems: 'center', gap: 14
+                        }} onClick={() => !isRunning && handleMachineSelect(did)}>
+                          <DryerIcon size={44} />
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: 16, fontWeight: 700, color: '#1A1A1A' }}>烘乾{String(dryerNum).padStart(2,'0')}號({i === 0 ? '上' : '下'})</div>
+                            {isRunning && state.remaining > 0 && (
+                              <div style={{ fontSize: 13, color: '#888', marginTop: 3, display: 'flex', alignItems: 'center', gap: 4 }}>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                                {formatTime(state.remaining)}
+                              </div>
+                            )}
+                          </div>
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            {isRunning ? (
+                              <button className="m-btn m-btn-running">運轉</button>
                             ) : (
                               <button className="m-btn m-btn-use">使用</button>
                             )}
