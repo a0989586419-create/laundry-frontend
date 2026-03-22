@@ -20,11 +20,11 @@ const MODES = [
 
 // ─── 店家資料 ───
 const STORES = [
-  { id: 's1', name: '悠洗自助洗衣',           addr: '嘉義市東區文雅街181號',       machines: 6, dryers: 2 },
-  { id: 's2', name: '吼你洗自助洗衣(玉清店)', addr: '苗栗縣苗栗市玉清路51號',      machines: 6, dryers: 2 },
-  { id: 's3', name: '吼你洗自助洗衣(農會店)', addr: '苗栗縣苗栗市為公路290號',     machines: 6, dryers: 2 },
-  { id: 's4', name: '熊愛洗自助洗衣',         addr: '台中市西屯區福聯街22巷2號',    machines: 6, dryers: 2 },
-  { id: 's5', name: '上好洗自助洗衣',         addr: '高雄市鳳山區北平路214號',      machines: 6, dryers: 2 },
+  { id: 's1', name: '悠洗自助洗衣',           addr: '嘉義市東區文雅街181號',       machines: 6, dryers: 2, phone: '05-2781234', lat: 23.4800, lng: 120.4490, hours: '24小時營業' },
+  { id: 's2', name: '吼你洗自助洗衣(玉清店)', addr: '苗栗縣苗栗市玉清路51號',      machines: 6, dryers: 2, phone: '037-321567', lat: 24.5700, lng: 120.8200, hours: '24小時營業' },
+  { id: 's3', name: '吼你洗自助洗衣(農會店)', addr: '苗栗縣苗栗市為公路290號',     machines: 6, dryers: 2, phone: '037-325678', lat: 24.5650, lng: 120.8150, hours: '24小時營業' },
+  { id: 's4', name: '熊愛洗自助洗衣',         addr: '台中市西屯區福聯街22巷2號',    machines: 6, dryers: 2, phone: '04-23456789', lat: 24.1800, lng: 120.6500, hours: '24小時營業' },
+  { id: 's5', name: '上好洗自助洗衣',         addr: '高雄市鳳山區北平路214號',      machines: 6, dryers: 2, phone: '07-7891234', lat: 22.6300, lng: 120.3600, hours: '24小時營業' },
 ];
 
 // ─── 預設優惠券 ───
@@ -2000,6 +2000,9 @@ export default function App() {
   const [showNotAvailable, setShowNotAvailable] = useState(false);
   const [showNewsPage, setShowNewsPage] = useState(false);
   const [selectedNews, setSelectedNews] = useState(null);
+  const [showStoreDetailPage, setShowStoreDetailPage] = useState(false);
+  const [storeDetailTarget, setStoreDetailTarget] = useState(null);
+  const [showPhoneModal, setShowPhoneModal] = useState(false);
   const [showStoreModal, setShowStoreModal] = useState(false);
   const [showMachineModal, setShowMachineModal] = useState(false);
   const [machineModalTab, setMachineModalTab] = useState('washer');
@@ -2552,9 +2555,9 @@ export default function App() {
                   <div className="home-quick-icon"><IconTopup size={24} color="#AAA" /></div>
                   <div className="home-quick-label">線上儲值</div>
                 </button>
-                <button className="home-quick-item" onClick={() => switchTab('wash')}>
+                <button className="home-quick-item" onClick={() => setShowStoreDetailPage(true)}>
                   <div className="home-quick-icon"><IconStore size={24} color="#AAA" /></div>
-                  <div className="home-quick-label">日光門市</div>
+                  <div className="home-quick-label">門市查詢</div>
                 </button>
                 <button className="home-quick-item" onClick={() => setShowNotAvailable(true)}>
                   <div className="home-quick-icon"><IconShirt size={24} color="#AAA" /></div>
@@ -3976,6 +3979,127 @@ export default function App() {
         </div>
       )}
 
+      {/* ═══ Store Detail Page (門市查詢) ═══ */}
+      {showStoreDetailPage && (
+        <div className="fullpage-overlay">
+          <div className="fullpage-header">
+            <div className="fullpage-header-top">
+              <button className="fullpage-back" onClick={() => setShowStoreDetailPage(false)}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <div className="fullpage-brand">
+                <span className="brand-logo-text">YPURE</span>
+                <span style={{ fontSize: 16, fontWeight: 700 }}>雲管家</span>
+              </div>
+            </div>
+          </div>
+          <div className="fullpage-body" style={{ background: '#000', padding: '0 16px 40px' }}>
+            {/* Search */}
+            <div style={{ padding: '16px 0 12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.1)', borderRadius: 8, padding: '10px 14px' }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                <input type="text" placeholder="請輸入門市" style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: 14, width: '100%', outline: 'none' }} />
+              </div>
+            </div>
+
+            {/* Brand Banner */}
+            <div style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)', borderRadius: 16, padding: '24px 20px', marginBottom: 20, position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, background: 'url("data:image/svg+xml,%3Csvg width=\'200\' height=\'100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cdefs%3E%3ClinearGradient id=\'g\' x1=\'0%25\' y1=\'0%25\' x2=\'100%25\' y2=\'100%25\'%3E%3Cstop offset=\'0%25\' stop-color=\'%23ffffff08\'/%3E%3Cstop offset=\'100%25\' stop-color=\'%23ffffff02\'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill=\'url(%23g)\' width=\'200\' height=\'100\'/%3E%3C/svg%3E")', opacity: 0.3 }} />
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                  <span className="brand-logo-text" style={{ fontSize: 14, padding: '4px 10px' }}>YPURE</span>
+                  <span style={{ color: '#fff', fontSize: 18, fontWeight: 700 }}>雲管家</span>
+                </div>
+                <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>24h自助洗衣</div>
+              </div>
+            </div>
+
+            {/* Store Cards */}
+            {STORES.map(store => {
+              const storeStates = Object.entries(machineStates)
+                .filter(([k]) => k.startsWith(store.id + '-'))
+                .map(([, v]) => v);
+              const washerCount = store.machines;
+              const dryerCount = store.dryers || 0;
+              return (
+                <div key={store.id} style={{ background: '#1a1a1a', borderRadius: 16, padding: 16, marginBottom: 16, border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div style={{ display: 'flex', gap: 14, marginBottom: 14 }}>
+                    {/* Store Image Placeholder */}
+                    <div style={{ width: 100, height: 80, borderRadius: 10, background: 'linear-gradient(135deg, #2a2a3a, #1a1a2e)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                      <svg width="40" height="40" viewBox="0 0 48 48" fill="none" stroke="#555" strokeWidth="1.5">
+                        <rect x="8" y="14" width="32" height="26" rx="3"/>
+                        <circle cx="24" cy="30" r="8"/>
+                        <circle cx="24" cy="30" r="3"/>
+                        <rect x="12" y="17" width="24" height="6" rx="1"/>
+                        <circle cx="16" cy="20" r="1.5" fill="#555"/>
+                        <circle cx="21" cy="20" r="1.5" fill="#555"/>
+                        <rect x="28" y="19" width="5" height="2" rx="0.5" fill="#555"/>
+                      </svg>
+                    </div>
+                    {/* Store Info */}
+                    <div style={{ flex: 1 }}>
+                      <div style={{ color: '#fff', fontSize: 18, fontWeight: 700, marginBottom: 8 }}>{store.name}</div>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: 4 }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2" style={{ marginTop: 2, flexShrink: 0 }}><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5.4 8 12 8 12s8-6.6 8-12a8 8 0 0 0-8-8z"/></svg>
+                        <span style={{ color: '#aaa', fontSize: 13 }}>{store.addr}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                        <span style={{ color: '#aaa', fontSize: 13 }}>營業時間：{store.hours || '全天'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Machine Counts + Action Buttons */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <svg width="18" height="18" viewBox="0 0 36 36" fill="none"><rect x="4" y="4" width="28" height="28" rx="4" stroke="#888" strokeWidth="2"/><circle cx="18" cy="20" r="7" stroke="#888" strokeWidth="2"/><circle cx="18" cy="20" r="2" fill="#4A90D9"/><path d="M15 18c2 2 4 2 6 0" fill="#E8943A"/><rect x="8" y="7" width="3" height="3" rx="1" fill="#888"/><rect x="13" y="7" width="3" height="3" rx="1" fill="#888"/></svg>
+                      <span style={{ color: '#ccc', fontSize: 13 }}>{washerCount}</span>
+                      <span style={{ color: '#555', margin: '0 2px' }}>|</span>
+                      <svg width="18" height="18" viewBox="0 0 36 36" fill="none"><rect x="4" y="4" width="28" height="28" rx="4" stroke="#E8943A" strokeWidth="2"/><circle cx="18" cy="20" r="7" fill="#E8943A"/><path d="M15 18c0-2 1.5-3 3-3s3 1 3 3M14 22c0 2 2 3 4 3s4-1 4-3" stroke="#fff" strokeWidth="1.5" fill="none"/><rect x="8" y="7" width="3" height="3" rx="1" fill="#E8943A"/><rect x="13" y="7" width="3" height="3" rx="1" fill="#E8943A"/></svg>
+                      <span style={{ color: '#ccc', fontSize: 13 }}>{dryerCount}</span>
+                      <span style={{ color: '#555', margin: '0 2px' }}>|</span>
+                      <svg width="18" height="18" viewBox="0 0 36 36" fill="none"><rect x="6" y="4" width="24" height="28" rx="3" stroke="#888" strokeWidth="2"/><rect x="10" y="8" width="16" height="4" rx="1" stroke="#888" strokeWidth="1.5"/><rect x="10" y="15" width="16" height="4" rx="1" stroke="#888" strokeWidth="1.5"/><rect x="10" y="22" width="16" height="4" rx="1" stroke="#888" strokeWidth="1.5"/></svg>
+                      <span style={{ color: '#ccc', fontSize: 13 }}>1</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {/* LINE Button */}
+                      <button onClick={() => window.open('https://line.me/R/ti/p/@ypure', '_blank')} style={{ width: 36, height: 36, borderRadius: '50%', background: '#06C755', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.271.173-.508.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+                      </button>
+                      {/* Phone Button */}
+                      <button onClick={() => { setStoreDetailTarget(store); setShowPhoneModal(true); }} style={{ width: 36, height: 36, borderRadius: '50%', background: '#333', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                      </button>
+                      {/* Navigation Button */}
+                      <button onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${store.lat},${store.lng}`, '_blank')} style={{ display: 'flex', alignItems: 'center', gap: 4, background: '#333', border: 'none', borderRadius: 20, padding: '8px 12px', cursor: 'pointer' }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5.4 8 12 8 12s8-6.6 8-12a8 8 0 0 0-8-8z"/></svg>
+                        <span style={{ color: '#fff', fontSize: 12 }}>到這裡去</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Phone Modal */}
+      {showPhoneModal && storeDetailTarget && (
+        <div className="modal-overlay" onClick={() => setShowPhoneModal(false)}>
+          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>聯絡電話</div>
+            <div style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>{storeDetailTarget.phone}</div>
+            <div style={{ fontSize: 13, color: '#888', marginBottom: 20 }}>{storeDetailTarget.name}</div>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button onClick={() => setShowPhoneModal(false)} style={{ flex: 1, padding: '12px', borderRadius: 12, border: '1px solid #ddd', background: '#fff', fontSize: 15, cursor: 'pointer' }}>關閉</button>
+              <button onClick={() => { window.open(`tel:${storeDetailTarget.phone}`); setShowPhoneModal(false); }} style={{ flex: 1, padding: '12px', borderRadius: 12, border: 'none', background: '#000', color: '#fff', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}>撥打電話</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ═══ News List Page ═══ */}
       {showNewsPage && !selectedNews && (
         <div className="fullpage-overlay">
@@ -4028,10 +4152,10 @@ export default function App() {
             </div>
             {/* Bottom social links */}
             <div style={{ display: 'flex', gap: 10, marginTop: 40, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-              <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 20, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
+              <button onClick={() => switchTab('wash')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 20, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
                 <IconMachine size={16} color="#888" /> 機器狀態
               </button>
-              <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 20, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
+              <button onClick={() => setShowStoreDetailPage(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 20, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
                 <IconStore size={16} color="#888" /> 雲管家門市
               </button>
               <button onClick={() => window.open('https://line.me/R/ti/p/@ypure', '_blank')}
