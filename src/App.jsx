@@ -2149,6 +2149,8 @@ export default function App() {
   const [showConsumerList, setShowConsumerList] = useState(false);
   const [consumerList, setConsumerList] = useState([]);
   const [consumerSearch, setConsumerSearch] = useState('');
+  const [selectedConsumer, setSelectedConsumer] = useState(null);
+  const [consumerDetail, setConsumerDetail] = useState(null);
 
   const [usageHistory, setUsageHistory] = useState(() => lsGet('ypure_usageHistory', []));
   const [transactions, setTransactions] = useState(() => lsGet('ypure_transactions', []));
@@ -4085,30 +4087,92 @@ export default function App() {
                       }}
                       style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--card-border)',
                         background: 'var(--bg)', color: '#fff', fontSize: 14, marginBottom: 12, boxSizing: 'border-box', fontFamily: 'inherit' }} />
+                    {/* Consumer detail view */}
+                    {selectedConsumer && consumerDetail ? (
+                      <div>
+                        <button onClick={() => { setSelectedConsumer(null); setConsumerDetail(null); }}
+                          style={{ background: 'none', border: 'none', color: 'var(--accent)', fontSize: 14, cursor: 'pointer', marginBottom: 12, padding: 0, fontFamily: 'inherit' }}>
+                          ← 返回會員列表
+                        </button>
+                        {/* Member header */}
+                        <div style={{ background: 'var(--card)', borderRadius: 'var(--radius-sm)', padding: 16, border: '1px solid var(--card-border)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 14 }}>
+                          {consumerDetail.member?.pictureUrl ? (
+                            <img src={consumerDetail.member.pictureUrl} alt="" style={{ width: 52, height: 52, borderRadius: '50%', objectFit: 'cover' }} />
+                          ) : (
+                            <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            </div>
+                          )}
+                          <div>
+                            <div style={{ fontSize: 18, fontWeight: 700 }}>{consumerDetail.member?.displayName || '未設定名稱'}</div>
+                            <div style={{ fontSize: 11, color: 'var(--text-hint)', fontFamily: 'monospace' }}>{consumerDetail.member?.lineUserId}</div>
+                            <div style={{ fontSize: 12, color: 'var(--text-hint)', marginTop: 4 }}>
+                              註冊：{consumerDetail.member?.registeredAt ? new Date(consumerDetail.member.registeredAt).toLocaleDateString('zh-TW') : '—'}
+                              {consumerDetail.member?.lastLogin && ` · 最後登入：${new Date(consumerDetail.member.lastLogin).toLocaleDateString('zh-TW')}`}
+                            </div>
+                          </div>
+                        </div>
+                        {/* Wallets */}
+                        <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+                          {(consumerDetail.wallets || []).map(w => (
+                            <div key={w.group_id} style={{ background: 'var(--card)', borderRadius: 10, padding: '10px 16px', border: '1px solid var(--card-border)', flex: '1 1 120px' }}>
+                              <div style={{ fontSize: 12, color: 'var(--text-hint)' }}>{w.group_name}</div>
+                              <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--accent)' }}>{w.balance} <span style={{ fontSize: 13 }}>點</span></div>
+                            </div>
+                          ))}
+                        </div>
+                        {/* Transaction history */}
+                        <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>交易紀錄</div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          {(consumerDetail.transactions || []).map(tx => (
+                            <div key={tx.id} style={{ background: 'var(--card)', borderRadius: 8, padding: '10px 14px', border: '1px solid var(--card-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <div>
+                                <div style={{ fontSize: 14, fontWeight: 600 }}>{tx.description || tx.type}</div>
+                                <div style={{ fontSize: 11, color: 'var(--text-hint)' }}>{tx.group_name} · {new Date(tx.created_at).toLocaleString('zh-TW')}</div>
+                              </div>
+                              <div style={{ fontWeight: 700, fontSize: 16, color: tx.amount > 0 ? 'var(--success)' : 'var(--danger)' }}>
+                                {tx.amount > 0 ? '+' : ''}{tx.amount}
+                              </div>
+                            </div>
+                          ))}
+                          {(consumerDetail.transactions || []).length === 0 && (
+                            <div style={{ textAlign: 'center', padding: 16, color: 'var(--text-hint)' }}>尚無交易紀錄</div>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                       {consumerList.map((c, i) => (
-                        <div key={i} style={{ background: 'var(--card)', borderRadius: 10, padding: '12px 16px', border: '1px solid var(--card-border)', display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div key={i} onClick={async () => {
+                          setSelectedConsumer(c.line_user_id);
+                          try {
+                            const r = await fetch(`${API}/api/admin/consumer/${c.line_user_id}?userId=${user?.userId}`);
+                            const data = await r.json();
+                            setConsumerDetail(data);
+                          } catch (e) { console.error(e); }
+                        }} style={{ background: 'var(--card)', borderRadius: 10, padding: '12px 16px', border: '1px solid var(--card-border)', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
                           {c.picture_url ? (
-                            <img src={c.picture_url} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }} />
+                            <img src={c.picture_url} alt="" style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover' }} />
                           ) : (
-                            <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                             </div>
                           )}
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ fontSize: 15, fontWeight: 600 }}>{c.display_name || '未設定名稱'}</div>
-                            <div style={{ fontSize: 11, color: 'var(--text-hint)', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.line_user_id}</div>
                             <div style={{ fontSize: 12, color: 'var(--text-hint)', marginTop: 2 }}>
-                              {c.group_name} · 餘額 <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{c.balance}</span> 點
+                              總餘額 <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{c.total_balance}</span> 點 · {c.group_count} 個門市
                               {c.last_login && <span> · {new Date(c.last_login).toLocaleDateString('zh-TW')}</span>}
                             </div>
                           </div>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
                         </div>
                       ))}
                       {consumerList.length === 0 && (
                         <div style={{ textAlign: 'center', padding: 20, color: 'var(--text-hint)' }}>尚無會員資料</div>
                       )}
                     </div>
+                    )}
                   </div>
                 )}
               </div>
