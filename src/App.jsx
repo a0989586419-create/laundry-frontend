@@ -1716,11 +1716,36 @@ function WasherIcon({ running, size = 36 }) {
       <circle cx="40" cy="10" r="1.8" fill="#333" />
       <line x1="4" y1="16" x2="44" y2="16" stroke="#333" strokeWidth="1.5" />
       <circle cx="24" cy="30" r="12" stroke="#333" strokeWidth="2.5" fill="none" />
-      <path d="M24 18a12 12 0 010 24c0-6.6-5.4-12-12-12a12 12 0 0112-12z" fill="#4A9FE5" />
-      <path d="M24 42a12 12 0 010-24c0 6.6 5.4 12 12 12a12 12 0 01-12 12z" fill="#E8943A" />
+      {/* Orange top half, Blue bottom half with wave split */}
+      <clipPath id={`drum-${s}`}><circle cx="24" cy="30" r="11.5" /></clipPath>
+      <g clipPath={`url(#drum-${s})`}>
+        <rect x="12" y="18" width="24" height="24" fill="#E8943A" />
+        <path d="M12 32 C16 28, 20 34, 24 30 S32 28, 36 32 L36 42 L12 42 Z" fill="#4A9FE5" />
+      </g>
       {running && <circle cx="24" cy="30" r="6" fill="rgba(255,255,255,0.3)">
         <animateTransform attributeName="transform" type="rotate" from="0 24 30" to="360 24 30" dur="2s" repeatCount="indefinite" />
       </circle>}
+    </svg>
+  );
+}
+function StoreWasherIcon({ size = 48 }) {
+  const s = size;
+  return (
+    <svg width={s} height={s} viewBox="0 0 56 56" fill="none">
+      <rect x="4" y="4" width="40" height="48" rx="4" stroke="#333" strokeWidth="3" fill="#FFF" />
+      <circle cx="14" cy="14" r="3.5" stroke="#333" strokeWidth="2.5" fill="none" />
+      <circle cx="24" cy="14" r="3.5" stroke="#333" strokeWidth="2.5" fill="none" />
+      <line x1="31" y1="11" x2="38" y2="11" stroke="#333" strokeWidth="2" />
+      <line x1="31" y1="14" x2="38" y2="14" stroke="#333" strokeWidth="2" />
+      <line x1="31" y1="17" x2="38" y2="17" stroke="#333" strokeWidth="2" />
+      <line x1="4" y1="22" x2="44" y2="22" stroke="#333" strokeWidth="2" />
+      <circle cx="24" cy="36" r="11" stroke="#333" strokeWidth="3" fill="none" />
+      <circle cx="24" cy="36" r="7" stroke="#333" strokeWidth="2" fill="none" />
+      <path d="M20 33 Q24 30 28 33" stroke="#333" strokeWidth="1.5" fill="none" />
+      {/* Small towel hanging out */}
+      <rect x="40" y="38" width="12" height="10" rx="2" stroke="#333" strokeWidth="2.5" fill="#FFF" />
+      <circle cx="7" cy="48" r="1.2" fill="#333" />
+      <circle cx="11" cy="48" r="1.2" fill="#333" />
     </svg>
   );
 }
@@ -1734,10 +1759,11 @@ function DryerIcon({ size = 36 }) {
       <rect x="27" y="7.5" width="10" height="5" rx="2.5" stroke="#333" strokeWidth="2" fill="none" />
       <circle cx="40" cy="10" r="1.8" fill="#333" />
       <line x1="4" y1="16" x2="44" y2="16" stroke="#333" strokeWidth="1.5" />
-      <circle cx="24" cy="30" r="12" stroke="#333" strokeWidth="2.5" fill="none" />
-      <path d="M18 24c2-3 4 0 6-3s4 0 6-3" stroke="#E8943A" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-      <path d="M18 30c2-3 4 0 6-3s4 0 6-3" stroke="#E8943A" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-      <path d="M18 36c2-3 4 0 6-3s4 0 6-3" stroke="#E8943A" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+      {/* Filled orange circle with white steam waves */}
+      <circle cx="24" cy="30" r="12" stroke="#333" strokeWidth="2.5" fill="#E8943A" />
+      <path d="M17 25c1.5-2.5 3 0 4.5-2.5s3 0 4.5-2.5 3 0 4.5-2.5" stroke="#FFF" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+      <path d="M17 31c1.5-2.5 3 0 4.5-2.5s3 0 4.5-2.5 3 0 4.5-2.5" stroke="#FFF" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+      <path d="M17 37c1.5-2.5 3 0 4.5-2.5s3 0 4.5-2.5 3 0 4.5-2.5" stroke="#FFF" strokeWidth="2.5" strokeLinecap="round" fill="none" />
     </svg>
   );
 }
@@ -2620,7 +2646,7 @@ export default function App() {
                           }}>
                             {selectedStore?.id === store.id ? '選擇 ✓' : '選擇'}
                           </button>
-                          <WasherIcon size={40} />
+                          <StoreWasherIcon size={48} />
                         </div>
                       </div>
                     ))}
