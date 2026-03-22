@@ -2125,6 +2125,16 @@ export default function App() {
   const [selectedStoreCoupon, setSelectedStoreCoupon] = useState(null);
   const [showPurchaseConfirm, setShowPurchaseConfirm] = useState(false);
   const [dryExtend, setDryExtend] = useState(0);
+
+  // ─── Multi-tenant state ───
+  const [storeGroups, setStoreGroups] = useState([]);
+  const [currentGroupId, setCurrentGroupId] = useState(null);
+  const [userRole, setUserRole] = useState('consumer'); // 'consumer' | 'store_admin' | 'super_admin'
+  const [groupWallets, setGroupWallets] = useState({}); // { sg1: 260, sg2: 0 }
+  const [managedGroupId, setManagedGroupId] = useState(null);
+  const [adminGroupFilter, setAdminGroupFilter] = useState(null);
+  const [adminData, setAdminData] = useState(null);
+
   const [usageHistory, setUsageHistory] = useState(() => lsGet('ypure_usageHistory', [
     { id: 'h1', date: '2026-03-20 14:30', store: '悠洗自助洗衣', machine: '洗脫烘2號', mode: '洗脫烘-標準', amount: 160, status: 'completed' },
     { id: 'h2', date: '2026-03-18 09:15', store: '熊愛洗自助洗衣', machine: '洗脫烘1號', mode: '只要洗衣', amount: 80, status: 'completed' },
@@ -2155,11 +2165,26 @@ export default function App() {
           if (window.liff.isLoggedIn()) {
             // Already logged in — get profile
             const profile = await window.liff.getProfile();
-            setUser({
+            const userData = {
               name: profile.displayName,
               picture: profile.pictureUrl,
               userId: profile.userId,
-            });
+            };
+            setUser(userData);
+            // Fetch user profile from backend
+            try {
+              const profileRes = await fetch(`${API}/api/user/profile?userId=${profile.userId}`);
+              const profileData = await profileRes.json();
+              if (profileData.role) setUserRole(profileData.role);
+              if (profileData.managedGroupId) setManagedGroupId(profileData.managedGroupId);
+              if (profileData.wallets) setGroupWallets(profileData.wallets);
+              if (profileData.groups && profileData.groups.length > 0) {
+                setStoreGroups(profileData.groups);
+                if (profileData.groups.length > 0) {
+                  setCurrentGroupId(profileData.groups[0].id);
+                }
+              }
+            } catch (e) { console.error('Profile fetch error:', e); }
           } else if (window.liff.isInClient()) {
             // In LINE app but not logged in — trigger login
             window.liff.login();
@@ -2240,7 +2265,7 @@ export default function App() {
   }, []);
 
   const setDefaultStates = (storeId) => {
-    const store = STORES.find(s => s.id === storeId);
+    const store = availableStores.find(s => s.id === storeId) || STORES.find(s => s.id === storeId);
     const machines = store?.machines || 6;
     const dryers = store?.dryers || 2;
     setMachineStates(prev => {
@@ -2309,6 +2334,49 @@ export default function App() {
   const switchTab = (t) => { setTab(t); window.scrollTo({ top: 0, behavior: 'smooth' }); };
   const [storeSearch, setStoreSearch] = useState('');
   const [storeDropdownOpen, setStoreDropdownOpen] = useState(true);
+
+  // ─── Compute stores from API data or fallback to STORES constant ───
+  const availableStores = storeGroups.length > 0
+    ? storeGroups.flatMap(g => (g.stores || []).map(s => ({
+        id: s.id,
+        name: s.name,
+        addr: s.address,
+        machines: 6,
+        dryers: 2,
+        phone: s.phone || '0800-018-888',
+        lat: 0, lng: 0,
+        hours: '24小時營業',
+        groupId: g.id,
+        groupName: g.name,
+        groupType: g.type,
+      })))
+    : STORES.map(s => ({ ...s, groupId: 'sg1', groupName: '雲管家', groupType: 'independent' }));
+
+  // Current group's stores
+  const currentStores = currentGroupId
+    ? availableStores.filter(s => s.groupId === currentGroupId)
+    : availableStores;
+
+  // Current points (wallet for selected group)
+  const currentPoints = currentGroupId ? (groupWallets[currentGroupId] || 0) : points;
+
+  // ─── Admin data fetch ───
+  useEffect(() => {
+    if ((userRole === 'super_admin' || userRole === 'store_admin') && tab === 'admin' && user?.userId) {
+      const fetchAdmin = async () => {
+        try {
+          const params = new URLSearchParams({ userId: user.userId });
+          if (adminGroupFilter) params.set('groupId', adminGroupFilter);
+          const res = await fetch(`${API}/api/admin/dashboard?${params}`);
+          const data = await res.json();
+          setAdminData(data);
+        } catch (e) { console.error('Admin fetch error:', e); }
+      };
+      fetchAdmin();
+      const interval = setInterval(fetchAdmin, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [tab, userRole, adminGroupFilter, user?.userId]);
 
   const handleStoreSelect = (store) => {
     setSelectedStore(store);
@@ -2380,9 +2448,33 @@ export default function App() {
       : `洗脫烘${selectedMachine?.split('-m')[1]}號`;
 
     if (payMethod === 'wallet') {
-      if (points < finalPrice) {
+      if (currentPoints < finalPrice) {
         showToast('點數不足，請先儲值或改用 LINE Pay');
         return;
+      }
+      // Deduct via API if available
+      if (currentGroupId && user?.userId) {
+        try {
+          const deductRes = await fetch(`${API}/api/wallet/deduct`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: user.userId,
+              groupId: currentGroupId,
+              amount: finalPrice,
+              description: `${selectedStore?.name} - ${selectedMode?.name || '烘乾延長'}`,
+            }),
+          });
+          const deductData = await deductRes.json();
+          if (!deductData.success) {
+            showToast(deductData.error === 'insufficient balance' ? '點數不足' : '付款失敗');
+            return;
+          }
+          setGroupWallets(prev => ({ ...prev, [currentGroupId]: deductData.balance }));
+        } catch (e) {
+          console.error('Deduct error:', e);
+          // Fallback to local deduction
+        }
       }
       setPoints(prev => prev - finalPrice);
       const newHistory = {
@@ -2558,6 +2650,24 @@ export default function App() {
     setShowTopupModal(true);
   };
 
+  const doTopup = async (amount) => {
+    if (currentGroupId && user?.userId) {
+      try {
+        const res = await fetch(`${API}/api/wallet/topup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: user.userId, groupId: currentGroupId, amount }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setGroupWallets(prev => ({ ...prev, [currentGroupId]: data.balance }));
+        }
+      } catch (e) { console.error('Topup error:', e); }
+    }
+    // Also update local points as fallback
+    setPoints(prev => prev + amount);
+  };
+
   const confirmTopup = () => {
     let amount = 0;
     let bonus = 0;
@@ -2571,7 +2681,7 @@ export default function App() {
       showToast('請選擇儲值方案或輸入金額'); return;
     }
     const total = amount + bonus;
-    setPoints(prev => prev + total);
+    doTopup(total);
     setTransactions(prev => [{ id: `t${Date.now()}`, name: '儲值', date: new Date().toISOString().split('T')[0], amount: total, type: 'topup' }, ...prev]);
     setShowTopupModal(false);
     setCustomTopupAmount('');
@@ -2670,6 +2780,21 @@ export default function App() {
               ══════════════════════════════════════ */}
           {tab === 'home' && (
             <>
+              {storeGroups.length > 1 && (
+                <div style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '0 0 12px', marginTop: 16 }}>
+                  {storeGroups.map(g => (
+                    <button key={g.id} onClick={() => setCurrentGroupId(g.id)}
+                      style={{
+                        padding: '8px 16px', borderRadius: 20, border: 'none', cursor: 'pointer',
+                        background: currentGroupId === g.id ? 'var(--accent)' : 'var(--card)',
+                        color: currentGroupId === g.id ? '#000' : '#fff',
+                        fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', fontFamily: 'inherit',
+                      }}>
+                      {g.name}
+                    </button>
+                  ))}
+                </div>
+              )}
               <div style={{ marginTop: 20 }}>
                 <div className="home-wallet">
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
@@ -2692,7 +2817,7 @@ export default function App() {
                       {pointsHidden ? (
                         <span style={{ fontSize: 36, letterSpacing: 6 }}>✱ ✱ ✱ ✱</span>
                       ) : (
-                        <>{points}<span>點</span></>
+                        <>{currentPoints}<span>點</span></>
                       )}
                     </div>
                     <button className="home-wallet-btn topup" onClick={handleTopup} style={{ flex: 'none', padding: '10px 24px', borderRadius: 20, display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -2713,7 +2838,7 @@ export default function App() {
                     </button>
                   </div>
                 </div>
-                {points < 100 && (
+                {currentPoints < 100 && (
                   <div className="points-banner">
                     <div className="points-banner-icon">💡</div>
                     <div className="points-banner-text">點數不足 100 點，建議先儲值再使用錢包付款</div>
@@ -2727,7 +2852,7 @@ export default function App() {
                 const runningMachines = Object.entries(machineStates)
                   .filter(([, v]) => v.status === 'running' && v.remaining > 0)
                   .map(([k, v]) => {
-                    const store = STORES.find(s => k.startsWith(s.id + '-'));
+                    const store = availableStores.find(s => k.startsWith(s.id + '-'));
                     const isDryer = k.includes('-d');
                     const num = isDryer ? k.split('-d')[1] : k.split('-m')[1];
                     const label = isDryer ? `烘乾${num}` : `${num}`;
@@ -2851,7 +2976,7 @@ export default function App() {
                 <span className="section-divider-text">門市機器狀態</span>
               </div>
               <div className="home-store-scroll">
-                {STORES.map(store => {
+                {currentStores.map(store => {
                   const washerIds = Array.from({ length: store.machines }, (_, i) => `${store.id}-m${i + 1}`);
                   const dryerIds = Array.from({ length: store.dryers || 2 }, (_, i) => `${store.id}-d${i + 1}`);
                   const washerIdle = washerIds.filter(id => { const s = machineStates[id]; return !s || s.status === 'idle'; }).length;
@@ -2936,7 +3061,7 @@ export default function App() {
                     </div>
                     {storeDropdownOpen && (
                       <div className="store-dropdown-list">
-                        {STORES.map(store => (
+                        {currentStores.map(store => (
                           <div key={store.id}
                             className={`store-dropdown-item ${selectedStore?.id === store.id ? 'active' : ''}`}
                             onClick={() => handleStoreSelect(store)}>
@@ -2966,7 +3091,7 @@ export default function App() {
 
                   {/* Store cards */}
                   <div style={{ display: 'flex', gap: 12, marginBottom: 20, overflowX: 'auto', paddingBottom: 4 }}>
-                    {STORES.map(store => (
+                    {currentStores.map(store => (
                       <div key={store.id} onClick={() => handleStoreSelect(store)}
                         style={{
                           minWidth: 160, borderRadius: 14, padding: '16px 14px',
@@ -3248,10 +3373,10 @@ export default function App() {
                     </div>
                   )}
 
-                  {payMethod === 'wallet' && selectedMode && points < getFinalPrice() && (
+                  {payMethod === 'wallet' && selectedMode && currentPoints < getFinalPrice() && (
                     <div className="points-banner">
                       <div className="points-banner-icon">⚠️</div>
-                      <div className="points-banner-text">餘額不足！需要 {getFinalPrice()} 點，目前只有 {points} 點</div>
+                      <div className="points-banner-text">餘額不足！需要 {getFinalPrice()} 點，目前只有 {currentPoints} 點</div>
                       <button className="points-banner-btn" onClick={handleTopup}>儲值</button>
                     </div>
                   )}
@@ -3382,7 +3507,7 @@ export default function App() {
                 )}
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 20, fontWeight: 700 }}>{user?.name}</div>
-                  <div style={{ fontSize: 14, color: 'var(--text-sub)', marginTop: 2 }}>點數餘額：<strong style={{ color: 'var(--primary)' }}>{points} 點</strong></div>
+                  <div style={{ fontSize: 14, color: 'var(--text-sub)', marginTop: 2 }}>點數餘額：<strong style={{ color: 'var(--primary)' }}>{currentPoints} 點</strong></div>
                 </div>
                 <button className="points-banner-btn" onClick={handleTopup}>儲值</button>
               </div>
@@ -3455,6 +3580,102 @@ export default function App() {
             </>
           )}
 
+          {/* ══════════════════════════════════════
+              TAB: 管理 (Admin)
+              ══════════════════════════════════════ */}
+          {tab === 'admin' && (
+            <>
+              <div className="sec-title">管理後台</div>
+              {userRole === 'super_admin' && storeGroups.length > 0 && (
+                <div style={{ display: 'flex', gap: 8, overflowX: 'auto', marginBottom: 16 }}>
+                  <button onClick={() => setAdminGroupFilter(null)}
+                    style={{ padding: '8px 16px', borderRadius: 20, border: 'none', cursor: 'pointer',
+                      background: !adminGroupFilter ? 'var(--accent)' : 'var(--card)', color: !adminGroupFilter ? '#000' : '#fff',
+                      fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', fontFamily: 'inherit' }}>
+                    全部
+                  </button>
+                  {storeGroups.map(g => (
+                    <button key={g.id} onClick={() => setAdminGroupFilter(g.id)}
+                      style={{ padding: '8px 16px', borderRadius: 20, border: 'none', cursor: 'pointer',
+                        background: adminGroupFilter === g.id ? 'var(--accent)' : 'var(--card)', color: adminGroupFilter === g.id ? '#000' : '#fff',
+                        fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', fontFamily: 'inherit' }}>
+                      {g.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Revenue Summary */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 20 }}>
+                <div style={{ background: 'var(--card)', borderRadius: 'var(--radius-sm)', padding: '16px 14px', border: '1px solid var(--card-border)' }}>
+                  <div style={{ fontSize: 13, color: 'var(--text-hint)', marginBottom: 6 }}>今日營收</div>
+                  <div style={{ fontSize: 24, fontWeight: 900, color: 'var(--accent)' }}>${adminData?.revenue?.today || 0}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-hint)', marginTop: 4 }}>{adminData?.revenue?.todayOrders || 0} 筆</div>
+                </div>
+                <div style={{ background: 'var(--card)', borderRadius: 'var(--radius-sm)', padding: '16px 14px', border: '1px solid var(--card-border)' }}>
+                  <div style={{ fontSize: 13, color: 'var(--text-hint)', marginBottom: 6 }}>本週營收</div>
+                  <div style={{ fontSize: 24, fontWeight: 900, color: '#FFF' }}>${adminData?.revenue?.week || 0}</div>
+                </div>
+                <div style={{ background: 'var(--card)', borderRadius: 'var(--radius-sm)', padding: '16px 14px', border: '1px solid var(--card-border)' }}>
+                  <div style={{ fontSize: 13, color: 'var(--text-hint)', marginBottom: 6 }}>本月營收</div>
+                  <div style={{ fontSize: 24, fontWeight: 900, color: '#FFF' }}>${adminData?.revenue?.month || 0}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-hint)', marginTop: 4 }}>{adminData?.revenue?.monthOrders || 0} 筆</div>
+                </div>
+              </div>
+
+              {/* Stats Row */}
+              <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
+                <div style={{ flex: 1, background: 'var(--card)', borderRadius: 'var(--radius-sm)', padding: '16px', border: '1px solid var(--card-border)' }}>
+                  <div style={{ fontSize: 13, color: 'var(--text-hint)' }}>消費者人數</div>
+                  <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{adminData?.consumerCount || 0}</div>
+                </div>
+                <div style={{ flex: 1, background: 'var(--card)', borderRadius: 'var(--radius-sm)', padding: '16px', border: '1px solid var(--card-border)' }}>
+                  <div style={{ fontSize: 13, color: 'var(--text-hint)' }}>總儲值金額</div>
+                  <div style={{ fontSize: 28, fontWeight: 900, color: 'var(--success)', marginTop: 6 }}>${adminData?.totalTopup || 0}</div>
+                </div>
+              </div>
+
+              {/* Machine Status */}
+              <div className="section-divider"><span className="section-divider-text">機器狀態</span></div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
+                {(adminData?.machines || []).map(m => (
+                  <div key={m.id} style={{ background: 'var(--card)', borderRadius: 10, padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--card-border)' }}>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 600 }}>{m.store_name} - {m.name}</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-hint)', marginTop: 2 }}>{m.size}</div>
+                    </div>
+                    <div style={{
+                      padding: '4px 12px', borderRadius: 12, fontSize: 13, fontWeight: 600,
+                      background: m.state === 'running' ? 'rgba(255,107,43,0.2)' : m.state === 'done' || m.state === 'idle' ? 'rgba(52,199,89,0.2)' : 'rgba(255,255,255,0.1)',
+                      color: m.state === 'running' ? '#FF6B2B' : m.state === 'done' || m.state === 'idle' ? '#34C759' : '#888',
+                    }}>
+                      {m.state === 'running' ? `運轉 ${Math.floor(m.remain_sec/60)}分` : m.state === 'done' || m.state === 'idle' ? '閒置' : '離線'}
+                    </div>
+                  </div>
+                ))}
+                {(!adminData?.machines || adminData.machines.length === 0) && (
+                  <div style={{ textAlign: 'center', padding: 30, color: 'var(--text-hint)' }}>載入中...</div>
+                )}
+              </div>
+
+              {/* Recent Transactions */}
+              <div className="section-divider"><span className="section-divider-text">最近交易</span></div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {(adminData?.recentTransactions || []).map(tx => (
+                  <div key={tx.id} style={{ background: 'var(--card)', borderRadius: 10, padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--card-border)' }}>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 600 }}>{tx.description || tx.type}</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-hint)', marginTop: 2 }}>{new Date(tx.created_at).toLocaleString('zh-TW')}</div>
+                    </div>
+                    <div style={{ fontWeight: 700, color: tx.amount > 0 ? 'var(--success)' : 'var(--danger)' }}>
+                      {tx.amount > 0 ? '+' : ''}{tx.amount}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
         </div>
       </div>
 
@@ -3505,6 +3726,15 @@ export default function App() {
             <ProfileIcon active={tab === 'profile'} />
             <div className="tab-item-label">我的</div>
           </button>
+          {(userRole === 'super_admin' || userRole === 'store_admin') && (
+            <button className={`tab-item ${tab === 'admin' ? 'active' : ''}`} onClick={() => switchTab('admin')}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={tab === 'admin' ? 'var(--accent)' : '#888'} strokeWidth="2" strokeLinecap="round">
+                <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" />
+              </svg>
+              <div className="tab-item-label">管理</div>
+            </button>
+          )}
         </div>
       </div>
 
@@ -4084,7 +4314,7 @@ export default function App() {
                 if (!customTopupAmount) return;
                 const amount = parseInt(customTopupAmount) || 0;
                 if (amount <= 0) return;
-                setPoints(prev => prev + amount);
+                doTopup(amount);
                 setTransactions(prev => [{ id: `t${Date.now()}`, name: `線上儲值`, date: new Date().toISOString().split('T')[0], amount: amount, type: 'topup' }, ...prev]);
                 setCustomTopupAmount('');
                 setShowTopupModal(false);
@@ -4298,7 +4528,7 @@ export default function App() {
             </div>
 
             {/* Store Cards */}
-            {STORES.map(store => {
+            {currentStores.map(store => {
               const storeStates = Object.entries(machineStates)
                 .filter(([k]) => k.startsWith(store.id + '-'))
                 .map(([, v]) => v);
@@ -4495,7 +4725,7 @@ export default function App() {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
               <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 15 }}>請輸入門市</span>
             </div>
-            {STORES.map(store => (
+            {currentStores.map(store => (
               <div key={store.id}
                 onClick={() => { handleStoreSelect(store); setShowStoreModal(false); }}
                 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 4px', borderBottom: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer' }}>
