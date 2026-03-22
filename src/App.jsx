@@ -2134,6 +2134,11 @@ export default function App() {
   const [managedGroupId, setManagedGroupId] = useState(null);
   const [adminGroupFilter, setAdminGroupFilter] = useState(null);
   const [adminData, setAdminData] = useState(null);
+  const [showAdminUserMgmt, setShowAdminUserMgmt] = useState(false);
+  const [adminUsers, setAdminUsers] = useState([]);
+  const [newAdminUserId, setNewAdminUserId] = useState('');
+  const [newAdminGroupId, setNewAdminGroupId] = useState('');
+  const [newAdminRole, setNewAdminRole] = useState('store_admin');
 
   const [usageHistory, setUsageHistory] = useState(() => lsGet('ypure_usageHistory', [
     { id: 'h1', date: '2026-03-20 14:30', store: '悠洗自助洗衣', machine: '洗脫烘2號', mode: '洗脫烘-標準', amount: 160, status: 'completed' },
@@ -3683,6 +3688,109 @@ export default function App() {
                   <div style={{ textAlign: 'center', padding: 30, color: 'var(--text-hint)' }}>載入中...</div>
                 )}
               </div>
+
+              {/* Admin User Management (super_admin only) */}
+              {userRole === 'super_admin' && (
+                <>
+                  <div className="section-divider"><span className="section-divider-text">業主管理</span></div>
+                  <div style={{ marginBottom: 20 }}>
+                    <button onClick={async () => {
+                      setShowAdminUserMgmt(!showAdminUserMgmt);
+                      if (!showAdminUserMgmt) {
+                        try {
+                          const r = await fetch(`${API}/api/admin/users?userId=${user?.userId}`);
+                          const data = await r.json();
+                          if (Array.isArray(data)) setAdminUsers(data);
+                        } catch (e) { console.error(e); }
+                      }
+                    }} style={{ width: '100%', padding: '14px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--card-border)',
+                      background: 'var(--card)', color: '#fff', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span>管理業主與角色</span>
+                      <span style={{ transform: showAdminUserMgmt ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>▼</span>
+                    </button>
+
+                    {showAdminUserMgmt && (
+                      <div style={{ marginTop: 12 }}>
+                        {/* Add new role */}
+                        <div style={{ background: 'var(--card)', borderRadius: 'var(--radius-sm)', padding: 16, border: '1px solid var(--card-border)', marginBottom: 12 }}>
+                          <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12, color: 'var(--accent)' }}>新增角色</div>
+                          <input placeholder="LINE User ID (U...)" value={newAdminUserId} onChange={e => setNewAdminUserId(e.target.value)}
+                            style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--card-border)',
+                              background: 'var(--bg)', color: '#fff', fontSize: 14, marginBottom: 8, boxSizing: 'border-box', fontFamily: 'inherit' }} />
+                          <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                            <select value={newAdminRole} onChange={e => setNewAdminRole(e.target.value)}
+                              style={{ flex: 1, padding: '10px 12px', borderRadius: 8, border: '1px solid var(--card-border)',
+                                background: 'var(--bg)', color: '#fff', fontSize: 14, fontFamily: 'inherit' }}>
+                              <option value="store_admin">門市業主</option>
+                              <option value="super_admin">系統管理員</option>
+                            </select>
+                            {newAdminRole === 'store_admin' && (
+                              <select value={newAdminGroupId} onChange={e => setNewAdminGroupId(e.target.value)}
+                                style={{ flex: 1, padding: '10px 12px', borderRadius: 8, border: '1px solid var(--card-border)',
+                                  background: 'var(--bg)', color: '#fff', fontSize: 14, fontFamily: 'inherit' }}>
+                                <option value="">選擇群組</option>
+                                {storeGroups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+                              </select>
+                            )}
+                          </div>
+                          <button onClick={async () => {
+                            if (!newAdminUserId) { showToast('請輸入 LINE User ID'); return; }
+                            if (newAdminRole === 'store_admin' && !newAdminGroupId) { showToast('請選擇群組'); return; }
+                            try {
+                              const r = await fetch(`${API}/api/admin/users`, {
+                                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ userId: user?.userId, targetUserId: newAdminUserId, role: newAdminRole, groupId: newAdminGroupId || null }),
+                              });
+                              const data = await r.json();
+                              if (data.success) {
+                                showToast('角色已新增');
+                                setNewAdminUserId(''); setNewAdminGroupId('');
+                                const rr = await fetch(`${API}/api/admin/users?userId=${user?.userId}`);
+                                const dd = await rr.json();
+                                if (Array.isArray(dd)) setAdminUsers(dd);
+                              } else { showToast(data.error || '新增失敗'); }
+                            } catch (e) { showToast('新增失敗'); }
+                          }} style={{ width: '100%', padding: '12px', borderRadius: 8, border: 'none',
+                            background: 'var(--accent)', color: '#000', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                            新增
+                          </button>
+                        </div>
+
+                        {/* Existing roles list */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          {adminUsers.map(u => (
+                            <div key={u.id} style={{ background: 'var(--card)', borderRadius: 10, padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--card-border)' }}>
+                              <div>
+                                <div style={{ fontSize: 14, fontWeight: 600 }}>
+                                  {u.role === 'super_admin' ? '🔑 系統管理員' : '🏪 門市業主'}
+                                  {u.group_name && <span style={{ color: 'var(--accent)', marginLeft: 8 }}>{u.group_name}</span>}
+                                </div>
+                                <div style={{ fontSize: 11, color: 'var(--text-hint)', marginTop: 2, fontFamily: 'monospace' }}>{u.line_user_id}</div>
+                              </div>
+                              {u.line_user_id !== user?.userId && (
+                                <button onClick={async () => {
+                                  try {
+                                    await fetch(`${API}/api/admin/users/${u.id}?userId=${user?.userId}`, { method: 'DELETE' });
+                                    setAdminUsers(prev => prev.filter(x => x.id !== u.id));
+                                    showToast('已移除');
+                                  } catch (e) { showToast('移除失敗'); }
+                                }} style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(255,59,48,0.3)',
+                                  background: 'rgba(255,59,48,0.1)', color: '#FF3B30', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
+                                  移除
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                          {adminUsers.length === 0 && (
+                            <div style={{ textAlign: 'center', padding: 20, color: 'var(--text-hint)' }}>載入中...</div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
 
               {/* Recent Transactions */}
               <div className="section-divider"><span className="section-divider-text">最近交易</span></div>
