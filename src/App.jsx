@@ -2983,7 +2983,7 @@ export default function App() {
                       <rect x="15" y="26" width="10" height="8" />
                     </svg>
                   </div>
-                  <div className="home-quick-label">日光門市</div>
+                  <div className="home-quick-label">洗衣門市</div>
                 </button>
                 <button className="home-quick-item" onClick={() => setShowNotAvailable(true)}>
                   <div className="home-quick-icon">
