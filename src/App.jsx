@@ -2332,12 +2332,28 @@ export default function App() {
       setScreen('result');
       setTab('wash');
       window.history.replaceState({}, '', '/');
-    } else if (paymentResult === 'cancel') {
+    } else if (paymentResult === 'topup_success') {
+      const topupAmount = parseInt(params.get('amount')) || 0;
+      localStorage.removeItem('ypure_pendingTopup');
+      if (topupAmount > 0) {
+        setTransactions(prev => [{ id: `t${Date.now()}`, name: 'LINE Pay 儲值', date: new Date().toISOString().split('T')[0], amount: topupAmount, type: 'topup' }, ...prev]);
+      }
+      setTab('home');
+      window.history.replaceState({}, '', '/');
+      // Toast will show after splash
+      setTimeout(() => { setToast(`儲值成功！已加值 ${topupAmount} 點`); setTimeout(() => setToast(null), 3000); }, 2500);
+    } else if (paymentResult === 'cancel' || paymentResult === 'topup_fail') {
       localStorage.removeItem('ypure_pendingOrder');
-      setPayResult('cancel');
-      setScreen('result');
-      setTab('wash');
-      window.history.replaceState({}, '', window.location.pathname);
+      localStorage.removeItem('ypure_pendingTopup');
+      if (paymentResult === 'topup_fail') {
+        setTab('home');
+        setTimeout(() => { setToast('儲值失敗，請稍後再試'); setTimeout(() => setToast(null), 3000); }, 2500);
+      } else {
+        setPayResult('cancel');
+        setScreen('result');
+        setTab('wash');
+      }
+      window.history.replaceState({}, '', '/');
     }
   }, []);
 
@@ -4881,15 +4897,37 @@ export default function App() {
           <div className="topup-bottom-bar">
             <button
               className={`topup-confirm-fullbtn ${customTopupAmount ? 'ready' : ''}`}
-              onClick={() => {
+              onClick={async () => {
                 if (!customTopupAmount) return;
                 const amount = parseInt(customTopupAmount) || 0;
                 if (amount <= 0) return;
-                doTopup(amount);
-                setTransactions(prev => [{ id: `t${Date.now()}`, name: `線上儲值`, date: new Date().toISOString().split('T')[0], amount: amount, type: 'topup' }, ...prev]);
-                setCustomTopupAmount('');
-                setShowTopupModal(false);
-                showToast(`儲值成功！已加值 ${amount} 點`);
+                const gid = topupGroupId || effectiveGroupId || localStorage.getItem('ypure_entryGroup');
+                if (!gid) { showToast('請先選擇門市'); return; }
+                try {
+                  const res = await fetch(`${API}/api/topup/linepay`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: user?.userId, groupId: gid, amount }),
+                  });
+                  const data = await res.json();
+                  if (data.paymentUrl) {
+                    // LINE Pay available - redirect
+                    localStorage.setItem('ypure_pendingTopup', JSON.stringify({ amount, groupId: gid }));
+                    window.location.href = data.paymentUrl;
+                  } else if (data.success && data.demoMode) {
+                    // Demo mode - points added directly
+                    setGroupWallets(prev => ({ ...prev, [gid]: data.balance }));
+                    setTransactions(prev => [{ id: `t${Date.now()}`, name: `儲值`, date: new Date().toISOString().split('T')[0], amount, type: 'topup' }, ...prev]);
+                    setCustomTopupAmount('');
+                    setShowTopupModal(false);
+                    showToast(`儲值成功！已加值 ${amount} 點`);
+                  } else {
+                    showToast(data.error || '儲值失敗');
+                  }
+                } catch (e) {
+                  console.error('Topup error:', e);
+                  showToast('儲值失敗，請稍後再試');
+                }
               }}
               disabled={!customTopupAmount}>
               確認
