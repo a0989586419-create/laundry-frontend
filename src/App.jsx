@@ -4411,7 +4411,24 @@ export default function App() {
                   </div>
                   <div className="settings-row-label">用戶ID</div>
                 </div>
-                <div className="settings-row-value">{user?.userId || 'N/A'}</div>
+                <div className="settings-row-value" style={{ cursor: 'pointer', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', fontSize: 12 }}
+                  onClick={() => {
+                    if (user?.userId) {
+                      navigator.clipboard?.writeText(user.userId).then(() => showToast('已複製 User ID')).catch(() => {
+                        // Fallback for environments without clipboard API
+                        const ta = document.createElement('textarea');
+                        ta.value = user.userId;
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(ta);
+                        showToast('已複製 User ID');
+                      });
+                    }
+                  }}>
+                  {user?.userId || 'N/A'}
+                  <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--accent)' }}>複製</span>
+                </div>
               </div>
               <div className="settings-row" style={{ cursor: 'pointer' }} onClick={() => showToast('個人資料功能開發中')}>
                 <div className="settings-row-left">
