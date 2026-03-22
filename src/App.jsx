@@ -20,11 +20,11 @@ const MODES = [
 
 // ─── 店家資料 ───
 const STORES = [
-  { id: 's1', name: '悠洗自助洗衣',           addr: '嘉義市東區文雅街181號',       machines: 6, dryers: 2, phone: '05-2781234', lat: 23.4800, lng: 120.4490, hours: '24小時營業' },
-  { id: 's2', name: '吼你洗自助洗衣(玉清店)', addr: '苗栗縣苗栗市玉清路51號',      machines: 6, dryers: 2, phone: '037-321567', lat: 24.5700, lng: 120.8200, hours: '24小時營業' },
-  { id: 's3', name: '吼你洗自助洗衣(農會店)', addr: '苗栗縣苗栗市為公路290號',     machines: 6, dryers: 2, phone: '037-325678', lat: 24.5650, lng: 120.8150, hours: '24小時營業' },
-  { id: 's4', name: '熊愛洗自助洗衣',         addr: '台中市西屯區福聯街22巷2號',    machines: 6, dryers: 2, phone: '04-23456789', lat: 24.1800, lng: 120.6500, hours: '24小時營業' },
-  { id: 's5', name: '上好洗自助洗衣',         addr: '高雄市鳳山區北平路214號',      machines: 6, dryers: 2, phone: '07-7891234', lat: 22.6300, lng: 120.3600, hours: '24小時營業' },
+  { id: 's1', name: '悠洗自助洗衣',           addr: '嘉義市東區文雅街181號',       machines: 6, dryers: 2, phone: '0800-018-888', lat: 23.4800, lng: 120.4490, hours: '24小時營業' },
+  { id: 's2', name: '吼你洗自助洗衣(玉清店)', addr: '苗栗縣苗栗市玉清路51號',      machines: 6, dryers: 2, phone: '0800-018-888', lat: 24.5700, lng: 120.8200, hours: '24小時營業' },
+  { id: 's3', name: '吼你洗自助洗衣(農會店)', addr: '苗栗縣苗栗市為公路290號',     machines: 6, dryers: 2, phone: '0800-018-888', lat: 24.5650, lng: 120.8150, hours: '24小時營業' },
+  { id: 's4', name: '熊愛洗自助洗衣',         addr: '台中市西屯區福聯街22巷2號',    machines: 6, dryers: 2, phone: '0800-018-888', lat: 24.1800, lng: 120.6500, hours: '24小時營業' },
+  { id: 's5', name: '上好洗自助洗衣',         addr: '高雄市鳳山區北平路214號',      machines: 6, dryers: 2, phone: '0800-018-888', lat: 22.6300, lng: 120.3600, hours: '24小時營業' },
 ];
 
 // ─── 預設優惠券 ───
@@ -4003,14 +4003,19 @@ export default function App() {
             </div>
 
             {/* Brand Banner */}
-            <div style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)', borderRadius: 16, padding: '24px 20px', marginBottom: 20, position: 'relative', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, background: 'url("data:image/svg+xml,%3Csvg width=\'200\' height=\'100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cdefs%3E%3ClinearGradient id=\'g\' x1=\'0%25\' y1=\'0%25\' x2=\'100%25\' y2=\'100%25\'%3E%3Cstop offset=\'0%25\' stop-color=\'%23ffffff08\'/%3E%3Cstop offset=\'100%25\' stop-color=\'%23ffffff02\'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill=\'url(%23g)\' width=\'200\' height=\'100\'/%3E%3C/svg%3E")', opacity: 0.3 }} />
+            <div style={{ background: 'linear-gradient(135deg, #0a0a1a 0%, #111128 30%, #1a1a3a 60%, #0a0a1a 100%)', borderRadius: 16, padding: '28px 24px', marginBottom: 20, position: 'relative', overflow: 'hidden' }}>
+              {/* Light streak effect */}
+              <div style={{ position: 'absolute', top: '-50%', left: '-20%', width: '140%', height: '200%', background: 'linear-gradient(160deg, transparent 40%, rgba(255,255,255,0.03) 45%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 55%, transparent 60%)', transform: 'rotate(-15deg)' }} />
+              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '2px', background: 'linear-gradient(90deg, transparent 10%, rgba(200,168,78,0.4) 30%, rgba(200,168,78,0.8) 50%, rgba(200,168,78,0.4) 70%, transparent 90%)' }} />
               <div style={{ position: 'relative', zIndex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                  <span className="brand-logo-text" style={{ fontSize: 14, padding: '4px 10px' }}>YPURE</span>
-                  <span style={{ color: '#fff', fontSize: 18, fontWeight: 700 }}>雲管家</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
+                  <span className="brand-logo-text" style={{ fontSize: 16, padding: '5px 14px', letterSpacing: 2 }}>YPURE</span>
+                  <div>
+                    <div style={{ color: '#fff', fontSize: 20, fontWeight: 800, letterSpacing: 1 }}>雲管家</div>
+                    <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, letterSpacing: 0.5 }}>YPURE Cloud Butler</div>
+                  </div>
                 </div>
-                <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>24h自助洗衣</div>
+                <div style={{ color: 'rgba(200,168,78,0.9)', fontSize: 14, fontWeight: 500, marginTop: 8 }}>24h自助洗衣</div>
               </div>
             </div>
 
@@ -4025,15 +4030,17 @@ export default function App() {
                 <div key={store.id} style={{ background: '#1a1a1a', borderRadius: 16, padding: 16, marginBottom: 16, border: '1px solid rgba(255,255,255,0.08)' }}>
                   <div style={{ display: 'flex', gap: 14, marginBottom: 14 }}>
                     {/* Store Image Placeholder */}
-                    <div style={{ width: 100, height: 80, borderRadius: 10, background: 'linear-gradient(135deg, #2a2a3a, #1a1a2e)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                      <svg width="40" height="40" viewBox="0 0 48 48" fill="none" stroke="#555" strokeWidth="1.5">
-                        <rect x="8" y="14" width="32" height="26" rx="3"/>
-                        <circle cx="24" cy="30" r="8"/>
-                        <circle cx="24" cy="30" r="3"/>
-                        <rect x="12" y="17" width="24" height="6" rx="1"/>
-                        <circle cx="16" cy="20" r="1.5" fill="#555"/>
-                        <circle cx="21" cy="20" r="1.5" fill="#555"/>
-                        <rect x="28" y="19" width="5" height="2" rx="0.5" fill="#555"/>
+                    <div style={{ width: 110, height: 85, borderRadius: 12, background: 'linear-gradient(145deg, #2a2a3a 0%, #1a1a2e 50%, #252540 100%)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
+                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 40%)' }} />
+                      <svg width="50" height="40" viewBox="0 0 50 40" fill="none">
+                        <rect x="5" y="8" width="16" height="24" rx="2" stroke="#444" strokeWidth="1.5"/>
+                        <circle cx="13" cy="22" r="5" stroke="#4A90D9" strokeWidth="1.5"/>
+                        <path d="M10 20c2 2 4 2 6 0" fill="#E8943A" opacity="0.8"/>
+                        <rect x="8" y="11" width="10" height="3" rx="0.5" stroke="#444" strokeWidth="1"/>
+                        <rect x="25" y="8" width="16" height="24" rx="2" stroke="#444" strokeWidth="1.5"/>
+                        <circle cx="33" cy="22" r="5" stroke="#4A90D9" strokeWidth="1.5"/>
+                        <path d="M30 20c2 2 4 2 6 0" fill="#E8943A" opacity="0.8"/>
+                        <rect x="28" y="11" width="10" height="3" rx="0.5" stroke="#444" strokeWidth="1"/>
                       </svg>
                     </div>
                     {/* Store Info */}
