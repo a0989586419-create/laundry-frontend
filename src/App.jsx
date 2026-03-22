@@ -47,15 +47,15 @@ const TOPUP_OPTIONS = [
 // ─── 優惠中心商品 ───
 const STORE_COUPONS = {
   gift: [
-    { id: 'sc1', name: '衣乾二淨', discount: '25%OFF', price: 675, originalPrice: 900, type: '滿減卷',
+    { id: 'sc1', name: '衣鳴驚人', discount: '25%OFF', price: 675, originalPrice: 900, type: '滿減卷',
       desc: '當實付點數達到70點，可使用該卷抵扣90點', timeSlot: '全時段可用', device: '限烘乾機使用，共可用11次',
       validity: '自購買起90日內有效', stores: '雲管家洗衣【全台直營門市】',
       usage: '於會員系統中使用『店內付款』功能，選擇該優惠卷，系統將自動扣抵點數', purchaseLimit: '不限制購買次數' },
-    { id: 'sc2', name: '大洗禮', discount: '30%OFF', price: 1750, originalPrice: 2500, type: '滿減卷',
+    { id: 'sc2', name: '衣見鍾情', discount: '30%OFF', price: 1750, originalPrice: 2500, type: '滿減卷',
       desc: '當實付點數達到160點，可使用該卷抵扣250點', timeSlot: '全時段可用', device: '限一體機(L)使用，共可用11次',
       validity: '自購買起90日內有效', stores: '雲管家洗衣【全台直營門市】',
       usage: '於會員系統中使用『店內付款』功能，選擇該優惠卷，系統將自動扣抵點數', purchaseLimit: '不限制購買次數' },
-    { id: 'sc3', name: '尚好洗', discount: '21%OFF', price: 999, originalPrice: 1260, type: '滿減卷',
+    { id: 'sc3', name: '煥然衣新', discount: '21%OFF', price: 999, originalPrice: 1260, type: '滿減卷',
       desc: '當實付點數達到120點，可使用該卷抵扣210點', timeSlot: '全時段可用', device: '限一體機(M)使用，共可用6次',
       validity: '自購買起31日內有效', stores: '雲管家洗衣【全台直營門市】',
       usage: '於會員系統中使用『店內付款』功能，選擇該優惠卷，系統將自動扣抵點數', purchaseLimit: '不限制購買次數' },
