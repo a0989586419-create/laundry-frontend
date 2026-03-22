@@ -1530,6 +1530,124 @@ body {
 }
 .cpay-confirm-btn:active { opacity: 0.8; }
 
+/* Topup Full Page */
+.topup-fullpage {
+  position: fixed; inset: 0; z-index: 800;
+  background: #000; display: flex; flex-direction: column;
+  animation: fadeIn 0.2s ease;
+}
+.topup-fullpage-body {
+  flex: 1; overflow-y: auto; padding: 0 20px 120px;
+}
+.topup-input-card {
+  background: #FFF; border-radius: 16px; padding: 20px;
+  margin-bottom: 24px;
+}
+.topup-input-title {
+  font-size: 16px; font-weight: 600; color: #1A1A1A; margin-bottom: 16px;
+}
+.topup-input-row {
+  display: flex; align-items: baseline; justify-content: center; gap: 8px;
+  padding: 20px 0;
+}
+.topup-input-field {
+  font-size: 36px; font-weight: 800; color: #C8A84E;
+  background: none; border: none; outline: none;
+  text-align: center; width: 100%;
+  font-family: inherit;
+  caret-color: #C8A84E;
+}
+.topup-input-field::placeholder {
+  color: #D0D0D0; font-weight: 600;
+}
+.topup-input-unit {
+  font-size: 18px; font-weight: 700; color: #888; flex-shrink: 0;
+}
+.topup-pay-title {
+  font-size: 18px; font-weight: 700; color: #FFF; margin-bottom: 14px;
+}
+.topup-pay-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  margin-bottom: 20px;
+}
+.topup-pay-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 18px 16px; background: #1A1A1A;
+  border-radius: 14px; border: 1.5px solid rgba(255,255,255,0.08);
+  cursor: pointer; transition: all 0.15s;
+}
+.topup-pay-item.active {
+  border-color: #C8A84E; background: rgba(200,168,78,0.08);
+}
+.topup-pay-item:active { transform: scale(0.97); }
+.topup-pay-logo {
+  width: 36px; height: 36px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 800; color: #FFF; flex-shrink: 0;
+}
+.topup-pay-name {
+  font-size: 15px; font-weight: 600; color: rgba(255,255,255,0.85);
+  flex: 1;
+}
+.topup-pay-radio {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.2); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.topup-pay-item.active .topup-pay-radio {
+  border-color: #C8A84E;
+}
+.topup-pay-item.active .topup-pay-radio::after {
+  content: ''; width: 12px; height: 12px; border-radius: 50%;
+  background: #C8A84E;
+}
+.topup-bottom-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  padding: 16px 20px; padding-bottom: calc(env(safe-area-inset-bottom, 16px) + 16px);
+  background: #000; border-top: 1px solid rgba(255,255,255,0.08);
+  z-index: 810;
+}
+.topup-confirm-fullbtn {
+  width: 100%; padding: 18px; border-radius: 14px; border: none;
+  background: #1A1A1A; color: #FFF; font-size: 17px; font-weight: 700;
+  cursor: pointer; font-family: inherit; transition: all 0.15s;
+}
+.topup-confirm-fullbtn.ready {
+  background: #C8A84E; color: #000;
+}
+.topup-confirm-fullbtn:active { opacity: 0.8; }
+
+/* Points Info Full Page */
+.points-info-fullpage {
+  position: fixed; inset: 0; z-index: 800;
+  background: #000; display: flex; flex-direction: column;
+  animation: fadeIn 0.2s ease;
+}
+.points-info-body {
+  flex: 1; overflow-y: auto; padding: 0 16px 40px;
+}
+.points-info-section-title {
+  font-size: 16px; font-weight: 700; color: #FFF;
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 12px; padding: 0 4px;
+}
+.points-info-card {
+  background: #FFF; border-radius: 16px; padding: 24px 20px;
+  margin-bottom: 16px;
+}
+.points-info-card-title {
+  font-size: 17px; font-weight: 700; color: #1A1A1A;
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 16px;
+}
+.points-info-item {
+  font-size: 15px; color: #333; line-height: 2;
+  padding-left: 4px;
+}
+.points-info-item strong {
+  color: #1A1A1A; font-weight: 700;
+}
+
 /* Confirm dialog */
 .confirm-dialog-overlay {
   position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -2976,52 +3094,54 @@ export default function App() {
         </div>
       )}
 
-      {/* ═══ Points Info Modal ═══ */}
+      {/* ═══ Points Info Full Page ═══ */}
       {showPointsInfo && (
-        <div className="modal-overlay" onClick={() => setShowPointsInfo(false)}>
-          <div className="modal-sheet" onClick={e => e.stopPropagation()} style={{ maxHeight: '85vh', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <div className="modal-title" style={{ margin: 0 }}>儲值點數說明</div>
-              <button onClick={() => setShowPointsInfo(false)} style={{ background: 'none', border: 'none', fontSize: 24, color: 'var(--text-sub)', cursor: 'pointer', padding: '4px 8px' }}>✕</button>
+        <div className="points-info-fullpage">
+          <div className="fullpage-header">
+            <div className="fullpage-header-top">
+              <button className="fullpage-back" onClick={() => setShowPointsInfo(false)}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFF" strokeWidth="2" strokeLinecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <div className="fullpage-title">點數說明</div>
+            </div>
+          </div>
+          <div className="points-info-body">
+            <div className="points-info-section-title">
+              <span className="section-title-bar"></span>
+              儲值點數說明
             </div>
 
-            <div style={{ background: 'var(--card)', borderRadius: 16, padding: '22px 20px', marginBottom: 16, border: '1px solid var(--card-border)' }}>
-              <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ background: '#06C755', borderRadius: 6, width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>⬆</span>
+            <div className="points-info-card">
+              <div className="points-info-card-title">
+                <span style={{ background: '#06C755', borderRadius: 6, width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: '#FFF' }}>⬆</span>
                 儲值流程
               </div>
-              <div style={{ fontSize: 15, lineHeight: 2, color: 'var(--text-sub)' }}>
-                <div><strong style={{ color: 'var(--text)' }}>1.</strong> 客人以現金支付儲值金額，例如1000元。</div>
-                <div><strong style={{ color: 'var(--text)' }}>2.</strong> 店家將以1:1比例將該金額轉換成等值點數（如1000點），點數會記錄在客人帳戶中。</div>
-                <div><strong style={{ color: 'var(--text)' }}>3.</strong> 點數可用於店內自助洗衣機或烘乾機的消費，使用時系統會自動扣除相應點數。</div>
-              </div>
+              <div className="points-info-item"><strong>1.</strong> 客人以現金支付儲值金額，例如1000元。</div>
+              <div className="points-info-item"><strong>2.</strong> 店家將以1:1比例將該金額轉換成等值點數（如1000點），點數會記錄在客人帳戶中。</div>
+              <div className="points-info-item"><strong>3.</strong> 點數可用於店內自助洗衣機或烘乾機的消費，使用時系統會自動扣除相應點數。</div>
             </div>
 
-            <div style={{ background: 'var(--card)', borderRadius: 16, padding: '22px 20px', marginBottom: 16, border: '1px solid var(--card-border)' }}>
-              <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ background: '#06C755', borderRadius: 6, width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>✅</span>
+            <div className="points-info-card">
+              <div className="points-info-card-title">
+                <span style={{ background: '#06C755', borderRadius: 6, width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: '#FFF' }}>✅</span>
                 使用方式
               </div>
-              <div style={{ fontSize: 15, lineHeight: 2, color: 'var(--text-sub)' }}>
-                <div><strong style={{ color: 'var(--text)' }}>1.</strong> 客人可隨時於會員系統中查詢點數餘額。</div>
-                <div><strong style={{ color: 'var(--text)' }}>2.</strong> 點數即時生效，可直接用於消費，不需額外兌換。</div>
-                <div><strong style={{ color: 'var(--text)' }}>3.</strong> 使用點數時，請依照機器或系統指示操作。</div>
-              </div>
+              <div className="points-info-item"><strong>1.</strong> 客人可隨時於會員系統中查詢點數餘額。</div>
+              <div className="points-info-item"><strong>2.</strong> 點數即時生效，可直接用於消費，不需額外兌換。</div>
+              <div className="points-info-item"><strong>3.</strong> 使用點數時，請依照機器或系統指示操作。</div>
             </div>
 
-            <div style={{ background: 'var(--card)', borderRadius: 16, padding: '22px 20px', border: '1px solid var(--card-border)' }}>
-              <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ background: '#F5A623', borderRadius: 6, width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>⚠</span>
+            <div className="points-info-card">
+              <div className="points-info-card-title">
+                <span style={{ background: '#F5A623', borderRadius: 6, width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: '#FFF' }}>⚠</span>
                 注意事項
               </div>
-              <div style={{ fontSize: 15, lineHeight: 2, color: 'var(--text-sub)' }}>
-                <div><strong style={{ color: 'var(--text)' }}>1.</strong> 點數不可兌換現金，僅限於店內消費使用。</div>
-                <div><strong style={{ color: 'var(--text)' }}>2.</strong> 請注意點數是否有使用期限，過期可能會失效。</div>
-                <div><strong style={{ color: 'var(--text)' }}>3.</strong> 儲值優惠或消費折扣，將於儲值時一併告知。</div>
-                <div><strong style={{ color: 'var(--text)' }}>4.</strong> 儲值點數屬於記名制，請妥善保管會員帳號或識別方式。</div>
-                <div><strong style={{ color: 'var(--text)' }}>5.</strong> 如遇系統異常或消費問題，請立即聯繫店家客服協助處理。</div>
-                <div><strong style={{ color: 'var(--text)' }}>6.</strong> 儲值後若需退費，需依店家退費政策辦理。</div>
-              </div>
+              <div className="points-info-item"><strong>1.</strong> 點數不可兌換現金，僅限於店內消費使用。</div>
+              <div className="points-info-item"><strong>2.</strong> 請注意點數是否有使用期限，過期可能會失效。</div>
+              <div className="points-info-item"><strong>3.</strong> 儲值優惠或消費折扣，將於儲值時一併告知。</div>
+              <div className="points-info-item"><strong>4.</strong> 儲值點數屬於記名制，請妥善保管會員帳號或識別方式。</div>
+              <div className="points-info-item"><strong>5.</strong> 如遇系統異常或消費問題，請立即聯繫店家客服協助處理。</div>
+              <div className="points-info-item"><strong>6.</strong> 儲值後若需退費，需依店家退費政策辦理。</div>
             </div>
           </div>
         </div>
@@ -3371,75 +3491,70 @@ export default function App() {
         </div>
       )}
 
-      {/* ═══ Topup Modal ═══ */}
+      {/* ═══ Topup Full Page ═══ */}
       {showTopupModal && (
-        <div className="modal-overlay" onClick={() => setShowTopupModal(false)}>
-          <div className="modal-sheet" onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <div className="modal-title" style={{ margin: 0 }}>$ 點數儲值</div>
-              <button onClick={() => setShowTopupModal(false)} style={{ background: 'none', border: 'none', fontSize: 24, color: 'var(--text-sub)', cursor: 'pointer', padding: '4px 8px' }}>✕</button>
+        <div className="topup-fullpage">
+          <div className="fullpage-header">
+            <div className="fullpage-header-top">
+              <button className="fullpage-back" onClick={() => setShowTopupModal(false)}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFF" strokeWidth="2" strokeLinecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <div className="fullpage-title">線上儲值</div>
             </div>
-            <div style={{ fontSize: 16, color: 'var(--text-sub)', marginBottom: 16 }}>
-              目前餘額：<strong style={{ color: 'var(--primary)' }}>{points} 點</strong>
-            </div>
-            <div className="topup-grid">
-              {TOPUP_OPTIONS.map(opt => (
-                <div key={opt.id}
-                  className={`topup-card ${selectedTopup?.id === opt.id ? 'selected' : ''} ${opt.popular ? 'popular' : ''}`}
-                  onClick={() => setSelectedTopup(opt)}>
-                  <div className="topup-amount">{opt.label}</div>
-                  <div className="topup-bonus">{opt.tag || ''}</div>
-                </div>
-              ))}
-            </div>
-            <div className="topup-custom">
-              <div className="topup-custom-label">或自訂</div>
-              <input className="topup-custom-input" type="number" placeholder="請輸入點數"
-                value={customTopupAmount}
-                onChange={e => { setCustomTopupAmount(e.target.value); setSelectedTopup(null); }} />
-              <div className="topup-custom-label">點</div>
-            </div>
-
-            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)', marginTop: 20, marginBottom: 8 }}>付款方式</div>
-            <div className="pay-method-grid">
-              {[
-                { key: 'linepay', icon: 'L', label: 'LINE Pay', color: '#06C755' },
-                { key: 'jkopay', icon: '街', label: '街口支付', color: '#E65100' },
-                { key: 'applepay', icon: '⌘', label: 'Apple Pay', color: '#FFF' },
-                { key: 'creditcard', icon: '卡', label: '信用卡', color: '#C8A84E' },
-              ].map(m => (
-                <div key={m.key} className={`pay-method-card ${topupPayMethod === m.key ? 'active' : ''}`}
-                  onClick={() => setTopupPayMethod(m.key)}>
-                  <span className="pay-method-icon" style={{ color: m.color, fontWeight: 900, fontSize: 16 }}>{m.icon}</span>
-                  <span className="pay-method-name">{m.label}</span>
-                </div>
-              ))}
-            </div>
-
-            {(selectedTopup || customTopupAmount) && (
-              <div style={{ marginTop: 16, padding: '14px 18px', background: '#111', borderRadius: 12, fontSize: 16 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <span style={{ color: 'var(--text-sub)' }}>儲值金額</span>
-                  <span style={{ fontWeight: 700 }}>${selectedTopup?.amount || customTopupAmount}</span>
-                </div>
-                {selectedTopup?.bonus > 0 && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                    <span style={{ color: 'var(--text-sub)' }}>贈送點數</span>
-                    <span style={{ fontWeight: 700, color: 'var(--accent)' }}>+{selectedTopup.bonus} 點</span>
-                  </div>
-                )}
-                <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 8, borderTop: '1px solid #2A2A2A' }}>
-                  <span style={{ fontWeight: 700 }}>實際獲得</span>
-                  <span style={{ fontWeight: 900, color: 'var(--primary)', fontSize: 20 }}>
-                    {selectedTopup ? selectedTopup.amount + selectedTopup.bonus : customTopupAmount} 點
-                  </span>
-                </div>
+          </div>
+          <div className="topup-fullpage-body">
+            {/* Input card */}
+            <div className="topup-input-card">
+              <div className="topup-input-title">儲值點數</div>
+              <div className="topup-input-row">
+                <input
+                  className="topup-input-field"
+                  type="number"
+                  placeholder="請輸入點數"
+                  value={customTopupAmount}
+                  onChange={e => { setCustomTopupAmount(e.target.value); setSelectedTopup(null); }}
+                />
+                <span className="topup-input-unit">點</span>
               </div>
-            )}
+            </div>
+
+            {/* Payment methods */}
+            <div className="topup-pay-title">付款方式</div>
+            <div className="topup-pay-grid">
+              {[
+                { key: 'linepay', label: 'LINE Pay', bg: '#06C755', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="#FFF"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596a.626.626 0 01-.199.031c-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771z"/></svg> },
+                { key: 'jkopay', label: '街口支付', bg: '#E65100', icon: <span style={{ fontSize: 16, fontWeight: 900 }}>街</span> },
+                { key: 'applepay', label: 'Apple Pay', bg: '#1A1A1A', icon: <svg width="18" height="22" viewBox="0 0 18 22" fill="#FFF"><path d="M14.94 11.58c-.02-2.17 1.77-3.21 1.85-3.26-1.01-1.47-2.58-1.67-3.14-1.7-1.33-.14-2.6.79-3.28.79-.68 0-1.72-.77-2.83-.75-1.46.02-2.8.85-3.55 2.15-1.52 2.63-.39 6.52 1.09 8.65.72 1.04 1.58 2.21 2.71 2.17 1.09-.04 1.5-.7 2.82-.7 1.31 0 1.68.7 2.82.68 1.17-.02 1.91-1.06 2.63-2.1.83-1.21 1.17-2.38 1.19-2.44-.03-.01-2.28-.87-2.31-3.49zM12.77 4.82c.6-.73 1.01-1.73.9-2.74-.87.04-1.92.58-2.54 1.3-.56.64-1.05 1.67-.92 2.66.97.07 1.96-.49 2.56-1.22z"/></svg> },
+                { key: 'samsungpay', label: 'Samsung Pay', bg: '#1428A0', icon: <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: -0.5 }}>pay</span> },
+                { key: 'mastercard', label: 'Mastercard', bg: '#EB001B', icon: <svg width="24" height="16" viewBox="0 0 24 16"><circle cx="9" cy="8" r="7" fill="#EB001B"/><circle cx="15" cy="8" r="7" fill="#F79E1B"/><path d="M12 2.4a7 7 0 010 11.2 7 7 0 000-11.2z" fill="#FF5F00"/></svg> },
+                { key: 'visa', label: 'VISA', bg: '#1A1F71', icon: <span style={{ fontSize: 14, fontWeight: 900, fontStyle: 'italic', letterSpacing: 1 }}>VISA</span> },
+              ].map(m => (
+                <div key={m.key} className={`topup-pay-item ${topupPayMethod === m.key ? 'active' : ''}`}
+                  onClick={() => setTopupPayMethod(m.key)}>
+                  <div className="topup-pay-logo" style={{ background: m.bg }}>{m.icon}</div>
+                  <span className="topup-pay-name">{m.label}</span>
+                  <div className="topup-pay-radio" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Bottom confirm */}
+          <div className="topup-bottom-bar">
             <button
-              className={`topup-confirm-btn ${(selectedTopup || customTopupAmount) ? 'ready' : 'disabled'}`}
-              onClick={confirmTopup} disabled={!(selectedTopup || customTopupAmount)}>
-              {selectedTopup ? `確認儲值 $${selectedTopup.amount}` : customTopupAmount ? `確認儲值 $${customTopupAmount}` : '請選擇儲值方案'}
+              className={`topup-confirm-fullbtn ${customTopupAmount ? 'ready' : ''}`}
+              onClick={() => {
+                if (!customTopupAmount) return;
+                const amount = parseInt(customTopupAmount) || 0;
+                if (amount <= 0) return;
+                setPoints(prev => prev + amount);
+                setTransactions(prev => [{ id: `t${Date.now()}`, name: `線上儲值`, date: new Date().toISOString().split('T')[0], amount: amount, type: 'topup' }, ...prev]);
+                setCustomTopupAmount('');
+                setShowTopupModal(false);
+                showToast(`儲值成功！已加值 ${amount} 點`);
+              }}
+              disabled={!customTopupAmount}>
+              確認
             </button>
           </div>
         </div>
