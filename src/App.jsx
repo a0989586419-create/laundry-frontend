@@ -2415,15 +2415,18 @@ export default function App() {
       })))
     : STORES.map(s => ({ ...s, groupId: 'sg1', groupName: '雲管家', groupType: 'independent' }));
 
-  // Current group's stores
-  const currentStores = currentGroupId
-    ? availableStores.filter(s => s.groupId === currentGroupId)
+  // Current group's stores - consumers always see only their group
+  const effectiveGroupId = currentGroupId || (storeGroups.length > 0 ? storeGroups[0].id : null);
+  const currentStores = effectiveGroupId
+    ? availableStores.filter(s => s.groupId === effectiveGroupId)
     : availableStores;
 
   // Current points (wallet for selected group)
-  const currentPoints = currentGroupId
-    ? (groupWallets[currentGroupId] || 0)
-    : Object.values(groupWallets).reduce((sum, v) => sum + (v || 0), 0) || points;
+  // Admin with "全部" selected: show total across all groups
+  // Consumer or specific group: show that group's balance
+  const currentPoints = (!currentGroupId && (userRole === 'super_admin' || userRole === 'store_admin'))
+    ? Object.values(groupWallets).reduce((sum, v) => sum + (v || 0), 0) || points
+    : (groupWallets[effectiveGroupId] || 0);
 
   // ─── Admin data fetch ───
   useEffect(() => {
@@ -2900,6 +2903,26 @@ export default function App() {
                       {g.name}
                     </button>
                   ))}
+                </div>
+              )}
+              {/* Consumer multi-group switcher */}
+              {storeGroups.length > 1 && userRole === 'consumer' && (
+                <div style={{ marginTop: 16, marginBottom: 4 }}>
+                  <div style={{ fontSize: 13, color: 'var(--text-hint)', marginBottom: 8 }}>目前門市</div>
+                  <div style={{ display: 'flex', gap: 8, overflowX: 'auto' }}>
+                    {storeGroups.map(g => (
+                      <button key={g.id} onClick={() => setCurrentGroupId(g.id)}
+                        style={{
+                          padding: '10px 18px', borderRadius: 12, border: effectiveGroupId === g.id ? '2px solid var(--accent)' : '1px solid var(--card-border)',
+                          cursor: 'pointer', background: effectiveGroupId === g.id ? 'rgba(207,174,112,0.15)' : 'var(--card)',
+                          color: effectiveGroupId === g.id ? 'var(--accent)' : '#fff',
+                          fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', fontFamily: 'inherit',
+                        }}>
+                        {g.name}
+                        <div style={{ fontSize: 11, color: 'var(--text-hint)', marginTop: 2 }}>{groupWallets[g.id] || 0} 點</div>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
               <div style={{ marginTop: 20 }}>
