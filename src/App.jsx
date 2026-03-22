@@ -2139,6 +2139,13 @@ export default function App() {
   const [newAdminUserId, setNewAdminUserId] = useState('');
   const [newAdminGroupId, setNewAdminGroupId] = useState('');
   const [newAdminRole, setNewAdminRole] = useState('store_admin');
+  const [showTopupMgmt, setShowTopupMgmt] = useState(false);
+  const [topupOverview, setTopupOverview] = useState([]);
+  const [showManualTopup, setShowManualTopup] = useState(false);
+  const [manualTopupUserId, setManualTopupUserId] = useState('');
+  const [manualTopupGroupId, setManualTopupGroupId] = useState('');
+  const [manualTopupAmount, setManualTopupAmount] = useState('');
+  const [manualTopupDesc, setManualTopupDesc] = useState('');
 
   const [usageHistory, setUsageHistory] = useState(() => lsGet('ypure_usageHistory', [
     { id: 'h1', date: '2026-03-20 14:30', store: '悠洗自助洗衣', machine: '洗脫烘2號', mode: '洗脫烘-標準', amount: 160, status: 'completed' },
@@ -2371,7 +2378,9 @@ export default function App() {
     : availableStores;
 
   // Current points (wallet for selected group)
-  const currentPoints = currentGroupId ? (groupWallets[currentGroupId] || 0) : points;
+  const currentPoints = currentGroupId
+    ? (groupWallets[currentGroupId] || 0)
+    : Object.values(groupWallets).reduce((sum, v) => sum + (v || 0), 0) || points;
 
   // ─── Admin data fetch ───
   useEffect(() => {
@@ -2813,6 +2822,15 @@ export default function App() {
             <>
               {storeGroups.length > 1 && (
                 <div style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '0 0 12px', marginTop: 16 }}>
+                  <button onClick={() => setCurrentGroupId(null)}
+                    style={{
+                      padding: '8px 16px', borderRadius: 20, border: 'none', cursor: 'pointer',
+                      background: !currentGroupId ? 'var(--accent)' : 'var(--card)',
+                      color: !currentGroupId ? '#000' : '#fff',
+                      fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', fontFamily: 'inherit',
+                    }}>
+                    全部
+                  </button>
                   {storeGroups.map(g => (
                     <button key={g.id} onClick={() => setCurrentGroupId(g.id)}
                       style={{
@@ -3686,6 +3704,129 @@ export default function App() {
                 ))}
                 {(!adminData?.machines || adminData.machines.length === 0) && (
                   <div style={{ textAlign: 'center', padding: 30, color: 'var(--text-hint)' }}>載入中...</div>
+                )}
+              </div>
+
+              {/* Store Topup Management */}
+              <div className="section-divider"><span className="section-divider-text">儲值系統管理</span></div>
+              <div style={{ marginBottom: 20 }}>
+                <button onClick={async () => {
+                  setShowTopupMgmt(!showTopupMgmt);
+                  if (!showTopupMgmt) {
+                    try {
+                      const r = await fetch(`${API}/api/admin/topup-overview?userId=${user?.userId}`);
+                      const data = await r.json();
+                      if (Array.isArray(data)) setTopupOverview(data);
+                    } catch (e) { console.error(e); }
+                  }
+                }} style={{ width: '100%', padding: '14px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--card-border)',
+                  background: 'var(--card)', color: '#fff', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>儲值系統控制</span>
+                  <span style={{ transform: showTopupMgmt ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>▼</span>
+                </button>
+
+                {showTopupMgmt && (
+                  <div style={{ marginTop: 12 }}>
+                    {/* Group overview cards */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
+                      {topupOverview.map(g => (
+                        <div key={g.id} style={{ background: 'var(--card)', borderRadius: 'var(--radius-sm)', padding: 16, border: '1px solid var(--card-border)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                            <div style={{ fontSize: 16, fontWeight: 700 }}>{g.name}</div>
+                            {userRole === 'super_admin' && (
+                              <button onClick={async () => {
+                                try {
+                                  await fetch(`${API}/api/admin/topup-toggle`, {
+                                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ userId: user?.userId, groupId: g.id, enabled: !g.topup_enabled }),
+                                  });
+                                  setTopupOverview(prev => prev.map(x => x.id === g.id ? { ...x, topup_enabled: !x.topup_enabled } : x));
+                                  showToast(g.topup_enabled ? '已關閉儲值' : '已開啟儲值');
+                                } catch (e) { showToast('操作失敗'); }
+                              }} style={{
+                                padding: '6px 14px', borderRadius: 16, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600, fontFamily: 'inherit',
+                                background: g.topup_enabled ? 'rgba(52,199,89,0.2)' : 'rgba(255,59,48,0.2)',
+                                color: g.topup_enabled ? '#34C759' : '#FF3B30',
+                              }}>
+                                {g.topup_enabled ? '儲值開啟' : '儲值關閉'}
+                              </button>
+                            )}
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                            <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 8, padding: '10px 12px' }}>
+                              <div style={{ fontSize: 11, color: 'var(--text-hint)' }}>消費者數</div>
+                              <div style={{ fontSize: 20, fontWeight: 800, marginTop: 2 }}>{g.consumer_count}</div>
+                            </div>
+                            <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 8, padding: '10px 12px' }}>
+                              <div style={{ fontSize: 11, color: 'var(--text-hint)' }}>總餘額</div>
+                              <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--accent)', marginTop: 2 }}>${g.total_balance}</div>
+                            </div>
+                            <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 8, padding: '10px 12px' }}>
+                              <div style={{ fontSize: 11, color: 'var(--text-hint)' }}>累計儲值</div>
+                              <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--success)', marginTop: 2 }}>${g.total_topup}</div>
+                            </div>
+                            <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 8, padding: '10px 12px' }}>
+                              <div style={{ fontSize: 11, color: 'var(--text-hint)' }}>累計消費</div>
+                              <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--danger)', marginTop: 2 }}>${g.total_spent}</div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Manual topup/deduct */}
+                    <button onClick={() => setShowManualTopup(!showManualTopup)}
+                      style={{ width: '100%', padding: '12px', borderRadius: 8, border: '1px solid var(--card-border)',
+                        background: showManualTopup ? 'var(--accent)' : 'var(--card)', color: showManualTopup ? '#000' : '#fff',
+                        fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', marginBottom: showManualTopup ? 12 : 0 }}>
+                      手動儲值 / 扣點
+                    </button>
+
+                    {showManualTopup && (
+                      <div style={{ background: 'var(--card)', borderRadius: 'var(--radius-sm)', padding: 16, border: '1px solid var(--card-border)' }}>
+                        <input placeholder="消費者 LINE User ID (U...)" value={manualTopupUserId} onChange={e => setManualTopupUserId(e.target.value)}
+                          style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--card-border)',
+                            background: 'var(--bg)', color: '#fff', fontSize: 14, marginBottom: 8, boxSizing: 'border-box', fontFamily: 'inherit' }} />
+                        <select value={manualTopupGroupId} onChange={e => setManualTopupGroupId(e.target.value)}
+                          style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--card-border)',
+                            background: 'var(--bg)', color: '#fff', fontSize: 14, marginBottom: 8, fontFamily: 'inherit' }}>
+                          <option value="">選擇店家群組</option>
+                          {storeGroups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+                        </select>
+                        <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                          <input placeholder="金額（正數=儲值，負數=扣點）" type="number" value={manualTopupAmount} onChange={e => setManualTopupAmount(e.target.value)}
+                            style={{ flex: 1, padding: '10px 12px', borderRadius: 8, border: '1px solid var(--card-border)',
+                              background: 'var(--bg)', color: '#fff', fontSize: 14, boxSizing: 'border-box', fontFamily: 'inherit' }} />
+                        </div>
+                        <input placeholder="備註（選填）" value={manualTopupDesc} onChange={e => setManualTopupDesc(e.target.value)}
+                          style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--card-border)',
+                            background: 'var(--bg)', color: '#fff', fontSize: 14, marginBottom: 12, boxSizing: 'border-box', fontFamily: 'inherit' }} />
+                        <button onClick={async () => {
+                          if (!manualTopupUserId || !manualTopupGroupId || !manualTopupAmount) { showToast('請填寫完整'); return; }
+                          try {
+                            const r = await fetch(`${API}/api/admin/manual-topup`, {
+                              method: 'POST', headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ userId: user?.userId, targetUserId: manualTopupUserId, groupId: manualTopupGroupId,
+                                amount: parseInt(manualTopupAmount), description: manualTopupDesc || undefined }),
+                            });
+                            const data = await r.json();
+                            if (data.success) {
+                              showToast(`操作成功，餘額: ${data.balance}`);
+                              setManualTopupUserId(''); setManualTopupAmount(''); setManualTopupDesc('');
+                              // Refresh overview
+                              const rr = await fetch(`${API}/api/admin/topup-overview?userId=${user?.userId}`);
+                              const dd = await rr.json();
+                              if (Array.isArray(dd)) setTopupOverview(dd);
+                            } else { showToast(data.error || '操作失敗'); }
+                          } catch (e) { showToast('操作失敗'); }
+                        }} style={{ width: '100%', padding: '12px', borderRadius: 8, border: 'none',
+                          background: 'var(--accent)', color: '#000', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                          確認執行
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
 
