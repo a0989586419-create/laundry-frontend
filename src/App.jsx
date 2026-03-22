@@ -2146,6 +2146,9 @@ export default function App() {
   const [manualTopupGroupId, setManualTopupGroupId] = useState('');
   const [manualTopupAmount, setManualTopupAmount] = useState('');
   const [manualTopupDesc, setManualTopupDesc] = useState('');
+  const [showConsumerList, setShowConsumerList] = useState(false);
+  const [consumerList, setConsumerList] = useState([]);
+  const [consumerSearch, setConsumerSearch] = useState('');
 
   const [usageHistory, setUsageHistory] = useState(() => lsGet('ypure_usageHistory', []));
   const [transactions, setTransactions] = useState(() => lsGet('ypure_transactions', []));
@@ -2175,15 +2178,31 @@ export default function App() {
               userId: profile.userId,
             };
             setUser(userData);
-            // Check URL for group parameter (e.g. ?group=sg2), or restore from localStorage
+            // Check URL for group parameter - try multiple sources since LIFF may strip params
             const urlParams = new URLSearchParams(window.location.search);
-            const entryGroupId = urlParams.get('group') || localStorage.getItem('ypure_entryGroup');
-            if (urlParams.get('group')) {
-              localStorage.setItem('ypure_entryGroup', urlParams.get('group'));
+            let groupFromUrl = urlParams.get('group');
+            // Also check hash fragment (LIFF sometimes puts params there)
+            if (!groupFromUrl && window.location.hash) {
+              const hashParams = new URLSearchParams(window.location.hash.replace('#', '?'));
+              groupFromUrl = hashParams.get('group');
+            }
+            // Also try liff.getContext() for custom params
+            if (!groupFromUrl && window.liff) {
+              try {
+                const ctx = window.liff.getContext();
+                if (ctx?.liffUrl) {
+                  const liffUrlParams = new URLSearchParams(new URL(ctx.liffUrl).search);
+                  groupFromUrl = liffUrlParams.get('group');
+                }
+              } catch(e) {}
+            }
+            const entryGroupId = groupFromUrl || localStorage.getItem('ypure_entryGroup');
+            if (groupFromUrl) {
+              localStorage.setItem('ypure_entryGroup', groupFromUrl);
             }
             // Fetch user profile from backend
             try {
-              const profileUrl = `${API}/api/user/profile?userId=${profile.userId}${entryGroupId ? `&groupId=${entryGroupId}` : ''}`;
+              const profileUrl = `${API}/api/user/profile?userId=${profile.userId}${entryGroupId ? `&groupId=${entryGroupId}` : ''}&displayName=${encodeURIComponent(profile.displayName || '')}&pictureUrl=${encodeURIComponent(profile.pictureUrl || '')}`;
               const profileRes = await fetch(profileUrl);
               const profileData = await profileRes.json();
               console.log('[Profile]', profile.userId, profileData.role, profileData);
@@ -4028,6 +4047,69 @@ export default function App() {
               )}
 
               {/* Recent Transactions */}
+              {/* Consumer Data */}
+              <div className="section-divider"><span className="section-divider-text">會員資料</span></div>
+              <div style={{ marginBottom: 20 }}>
+                <button onClick={async () => {
+                  setShowConsumerList(!showConsumerList);
+                  if (!showConsumerList) {
+                    try {
+                      const params = new URLSearchParams({ userId: user?.userId });
+                      if (adminGroupFilter) params.set('groupId', adminGroupFilter);
+                      const r = await fetch(`${API}/api/admin/consumers?${params}`);
+                      const data = await r.json();
+                      if (Array.isArray(data)) setConsumerList(data);
+                    } catch (e) { console.error(e); }
+                  }
+                }} style={{ width: '100%', padding: '14px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--card-border)',
+                  background: 'var(--card)', color: '#fff', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>查看會員 ({adminData?.consumerCount || 0} 人)</span>
+                  <span style={{ transform: showConsumerList ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>▼</span>
+                </button>
+                {showConsumerList && (
+                  <div style={{ marginTop: 12 }}>
+                    <input placeholder="搜尋會員名稱或 ID..." value={consumerSearch}
+                      onChange={async (e) => {
+                        setConsumerSearch(e.target.value);
+                        try {
+                          const params = new URLSearchParams({ userId: user?.userId, search: e.target.value });
+                          if (adminGroupFilter) params.set('groupId', adminGroupFilter);
+                          const r = await fetch(`${API}/api/admin/consumers?${params}`);
+                          const data = await r.json();
+                          if (Array.isArray(data)) setConsumerList(data);
+                        } catch (e2) {}
+                      }}
+                      style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--card-border)',
+                        background: 'var(--bg)', color: '#fff', fontSize: 14, marginBottom: 12, boxSizing: 'border-box', fontFamily: 'inherit' }} />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {consumerList.map((c, i) => (
+                        <div key={i} style={{ background: 'var(--card)', borderRadius: 10, padding: '12px 16px', border: '1px solid var(--card-border)', display: 'flex', alignItems: 'center', gap: 12 }}>
+                          {c.picture_url ? (
+                            <img src={c.picture_url} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }} />
+                          ) : (
+                            <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            </div>
+                          )}
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 15, fontWeight: 600 }}>{c.display_name || '未設定名稱'}</div>
+                            <div style={{ fontSize: 11, color: 'var(--text-hint)', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.line_user_id}</div>
+                            <div style={{ fontSize: 12, color: 'var(--text-hint)', marginTop: 2 }}>
+                              {c.group_name} · 餘額 <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{c.balance}</span> 點
+                              {c.last_login && <span> · {new Date(c.last_login).toLocaleDateString('zh-TW')}</span>}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      {consumerList.length === 0 && (
+                        <div style={{ textAlign: 'center', padding: 20, color: 'var(--text-hint)' }}>尚無會員資料</div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="section-divider"><span className="section-divider-text">最近交易</span></div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {(adminData?.recentTransactions || []).map(tx => (
