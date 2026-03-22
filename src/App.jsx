@@ -2179,6 +2179,7 @@ export default function App() {
               const profileUrl = `${API}/api/user/profile?userId=${profile.userId}${entryGroupId ? `&groupId=${entryGroupId}` : ''}`;
               const profileRes = await fetch(profileUrl);
               const profileData = await profileRes.json();
+              console.log('[Profile]', profile.userId, profileData.role, profileData);
               if (profileData.role) setUserRole(profileData.role);
               if (profileData.managedGroupId) setManagedGroupId(profileData.managedGroupId);
               if (profileData.wallets) setGroupWallets(profileData.wallets);
@@ -2504,6 +2505,24 @@ export default function App() {
           ...prev,
           [selectedMachine]: { status: 'running', remaining: minutes * 60, mode: selectedMode?.id || 'dryextend' },
         }));
+        // Report machine state to backend for cross-user visibility
+        try {
+          fetch(`${API}/api/machines/state`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ machineId: selectedMachine, state: 'running', remainSec: minutes * 60 }),
+          });
+          // Also create order in backend
+          fetch(`${API}/api/orders/create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              lineUserId: user?.userId, storeId: selectedStore?.id, machineId: selectedMachine,
+              mode: selectedMode?.id || 'dryextend', totalAmount: finalPrice,
+              extendMin: dryExtend || 0, temp: dryTemp,
+            }),
+          });
+        } catch (e) { /* non-critical */ }
       }
       setPayResult('success');
       setScreen('result');
