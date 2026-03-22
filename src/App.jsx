@@ -44,6 +44,39 @@ const TOPUP_OPTIONS = [
   { id: 'tp4', amount: 1000, bonus: 150, label: '$1,000', tag: '送150點' },
 ];
 
+// ─── 優惠中心商品 ───
+const STORE_COUPONS = {
+  gift: [
+    { id: 'sc1', name: '衣乾二淨', discount: '25%OFF', price: 675, originalPrice: 900, type: '滿減卷',
+      desc: '當實付點數達到70點，可使用該卷抵扣90點', timeSlot: '全時段可用', device: '限烘乾機使用，共可用11次',
+      validity: '自購買起90日內有效', stores: '雲管家洗衣【全台直營門市】',
+      usage: '於會員系統中使用『店內付款』功能，選擇該優惠卷，系統將自動扣抵點數', purchaseLimit: '不限制購買次數' },
+    { id: 'sc2', name: '大洗禮', discount: '30%OFF', price: 1750, originalPrice: 2500, type: '滿減卷',
+      desc: '當實付點數達到160點，可使用該卷抵扣250點', timeSlot: '全時段可用', device: '限一體機(L)使用，共可用11次',
+      validity: '自購買起90日內有效', stores: '雲管家洗衣【全台直營門市】',
+      usage: '於會員系統中使用『店內付款』功能，選擇該優惠卷，系統將自動扣抵點數', purchaseLimit: '不限制購買次數' },
+    { id: 'sc3', name: '尚好洗', discount: '21%OFF', price: 999, originalPrice: 1260, type: '滿減卷',
+      desc: '當實付點數達到120點，可使用該卷抵扣210點', timeSlot: '全時段可用', device: '限一體機(M)使用，共可用6次',
+      validity: '自購買起31日內有效', stores: '雲管家洗衣【全台直營門市】',
+      usage: '於會員系統中使用『店內付款』功能，選擇該優惠卷，系統將自動扣抵點數', purchaseLimit: '不限制購買次數' },
+  ],
+  monthly: [
+    { id: 'sc4', name: '夜猫計畫(半年)', discount: '37%OFF', price: 3800, originalPrice: 6000, type: '包月卷',
+      desc: '消費點數全額扣抵', timeSlot: '22:00-06:00', device: '限一體機(M/L)使用，共可用24次',
+      validity: '自購買起183日內有效', stores: '雲管家洗衣【全台直營門市】',
+      usage: '於會員系統中使用『店內付款』功能，選擇該優惠卷，系統將自動扣抵點數', purchaseLimit: '不限制購買次數' },
+    { id: 'sc5', name: '夜猫計畫(一年)', discount: '74%OFF', price: 5500, originalPrice: 21000, type: '包月卷',
+      desc: '消費點數全額扣抵', timeSlot: '22:00-06:00', device: '限一體機(M/L)使用，共可用84次',
+      validity: '自購買起365日內有效', stores: '雲管家洗衣【全台直營門市】',
+      usage: '於會員系統中使用『店內付款』功能，選擇該優惠卷，系統將自動扣抵點數', purchaseLimit: '不限制購買次數' },
+    { id: 'sc6', name: '夜猫計畫(單月)', discount: '45%OFF', price: 580, originalPrice: 1050, type: '包月卷',
+      desc: '消費點數全額扣抵', timeSlot: '22:00-06:00', device: '限一體機(M)使用，共可用5次',
+      validity: '自購買起31日內有效', stores: '雲管家洗衣【全台直營門市】',
+      usage: '於會員系統中使用『店內付款』功能，選擇該優惠卷，系統將自動扣抵點數', purchaseLimit: '不限制購買次數' },
+  ],
+  festival: [],
+};
+
 // ─── 預設最新消息 ───
 const NEWS_ITEMS = [
   { id: 'n1', title: '🎉 開幕優惠！儲值500送50', date: '2026-03-20', content: '即日起儲值500元送50點，限時優惠中！' },
@@ -666,10 +699,24 @@ body {
   background: rgba(0,0,0,0.2); color: #1A1A1A;
 }
 
+/* Section Title */
+.section-title-row {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 14px; margin-top: 4px;
+}
+.section-title-bar {
+  width: 4px; height: 20px; border-radius: 2px;
+  background: var(--accent, #C8A84E);
+}
+.section-title-text {
+  font-size: 18px; font-weight: 800; color: var(--text);
+  letter-spacing: 0.5px;
+}
+
 .home-grid {
   display: grid; grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr;
-  gap: 10px; margin-bottom: 16px;
+  gap: 10px; margin-bottom: 12px;
 }
 .home-grid-card {
   background: var(--card);
@@ -683,6 +730,13 @@ body {
   display: flex; flex-direction: column; justify-content: center;
 }
 .home-grid-card:active { transform: scale(0.97); }
+.home-grid-card-large {
+  align-items: center; text-align: center;
+  justify-content: center;
+}
+.home-grid-card-horizontal {
+  flex-direction: row; justify-content: space-between; align-items: center;
+}
 .home-grid-icon { margin-bottom: 10px; text-align: center; }
 .home-grid-label {
   font-size: 16px; font-weight: 700; color: var(--text);
@@ -1324,6 +1378,192 @@ body {
 .wallet-link-arrow {
   font-size: 14px; letter-spacing: -2px;
 }
+
+/* ═══ Full-page overlay (NIKKO style) ═══ */
+.fullpage-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: #000; z-index: 1100;
+  display: flex; flex-direction: column;
+  animation: slideUpPage 0.3s ease;
+}
+@keyframes slideUpPage {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.fullpage-header {
+  background: linear-gradient(180deg, #1a1a1a 0%, #111 100%);
+  padding: 16px 20px 0; flex-shrink: 0;
+}
+.fullpage-header-top {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+}
+.fullpage-back {
+  background: none; border: none; cursor: pointer; padding: 4px;
+  display: flex; align-items: center;
+}
+.fullpage-title {
+  font-size: 18px; font-weight: 700; color: #FFF;
+}
+.fullpage-tabs {
+  display: flex; gap: 0;
+}
+.fullpage-tab {
+  flex: 1; padding: 12px 0; text-align: center;
+  font-size: 15px; font-weight: 600; color: rgba(255,255,255,0.4);
+  border: none; background: none; cursor: pointer;
+  font-family: inherit; border-bottom: 2px solid transparent;
+  transition: all 0.2s; white-space: nowrap;
+}
+.fullpage-tab.active {
+  color: #FFF; border-bottom-color: #4A90D9;
+}
+.fullpage-body {
+  flex: 1; overflow-y: auto; padding: 20px;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ═══ Ticket-style coupon cards ═══ */
+.ticket-card {
+  display: flex; border-radius: 14px; overflow: hidden;
+  margin-bottom: 14px; position: relative;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+.ticket-left {
+  flex: 1; background: #1A1A1A; padding: 18px 16px;
+  position: relative;
+}
+.ticket-right {
+  width: 140px; background: #0D0D0D; padding: 18px 14px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  position: relative;
+}
+.ticket-left::after, .ticket-right::before {
+  content: ''; position: absolute; top: 50%; right: -8px; transform: translateY(-50%);
+  width: 16px; height: 16px; border-radius: 50%; background: #000;
+}
+.ticket-right::before {
+  left: -8px; right: auto;
+}
+.ticket-divider {
+  position: absolute; top: 15%; bottom: 15%; right: 0;
+  border-right: 2px dashed rgba(255,255,255,0.12);
+}
+.ticket-badge {
+  display: inline-block; background: #E74C3C; color: #FFF;
+  font-size: 12px; font-weight: 700; padding: 3px 10px;
+  border-radius: 4px; margin-bottom: 8px;
+}
+.ticket-name {
+  font-size: 20px; font-weight: 900; color: #FFF; margin-bottom: 8px;
+}
+.ticket-desc {
+  font-size: 12px; color: rgba(255,255,255,0.5); line-height: 1.7;
+}
+.ticket-price {
+  font-size: 32px; font-weight: 900; color: #FFF;
+}
+.ticket-price-unit {
+  font-size: 16px; font-weight: 700; color: var(--accent);
+}
+.ticket-original {
+  font-size: 13px; color: rgba(255,255,255,0.35);
+  text-decoration: line-through; margin-top: 2px;
+}
+.ticket-buy-btn {
+  margin-top: 10px; padding: 8px 20px; border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.3); background: transparent;
+  color: #FFF; font-size: 14px; font-weight: 700;
+  cursor: pointer; font-family: inherit; transition: all 0.15s;
+}
+.ticket-buy-btn:active { background: rgba(255,255,255,0.1); transform: scale(0.96); }
+
+/* ═══ Coupon Payment Page ═══ */
+.cpay-price-bar {
+  background: #E8E8E8; border-radius: 12px; padding: 20px 22px;
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 16px;
+}
+.cpay-price-label { font-size: 16px; font-weight: 600; color: #333; }
+.cpay-price-value { font-size: 42px; font-weight: 900; color: #1A1A1A; }
+.cpay-price-unit { font-size: 18px; font-weight: 700; color: #666; margin-left: 4px; }
+.cpay-info-card {
+  background: #FFF; border-radius: 14px; padding: 20px 22px; margin-bottom: 14px;
+}
+.cpay-info-row {
+  display: flex; justify-content: space-between; padding: 10px 0;
+  border-bottom: 1px solid #F0F0F0; font-size: 15px;
+}
+.cpay-info-row:last-child { border-bottom: none; }
+.cpay-info-label { color: #666; font-weight: 500; }
+.cpay-info-value { color: #1A1A1A; font-weight: 700; text-align: right; max-width: 60%; }
+.cpay-detail-card {
+  background: #FFF; border-radius: 14px; padding: 22px; margin-bottom: 14px;
+}
+.cpay-detail-title {
+  font-size: 17px; font-weight: 700; color: #1A1A1A; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.cpay-detail-row {
+  display: flex; gap: 12px; margin-bottom: 12px; font-size: 14px; line-height: 1.6;
+}
+.cpay-detail-label { color: #888; font-weight: 600; white-space: nowrap; min-width: 72px; }
+.cpay-detail-value { color: #333; font-weight: 500; }
+.cpay-warning-card {
+  background: #FFF; border-radius: 14px; padding: 22px; margin-bottom: 14px;
+}
+.cpay-warning-title {
+  font-size: 17px; font-weight: 700; color: #1A1A1A; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.cpay-warning-item {
+  font-size: 14px; color: #444; line-height: 1.8; margin-bottom: 4px;
+}
+.cpay-bottom-bar {
+  flex-shrink: 0; padding: 16px 20px;
+  background: #000; border-top: 1px solid rgba(255,255,255,0.08);
+  display: flex; align-items: center; gap: 14px;
+}
+.cpay-confirm-btn {
+  flex: 1; padding: 16px; border-radius: 14px; border: none;
+  background: #1A1A1A; color: #FFF; font-size: 17px; font-weight: 700;
+  cursor: pointer; font-family: inherit; transition: all 0.15s;
+}
+.cpay-confirm-btn:active { opacity: 0.8; }
+
+/* Confirm dialog */
+.confirm-dialog-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.6); z-index: 1200;
+  display: flex; align-items: center; justify-content: center;
+  padding: 30px;
+}
+.confirm-dialog {
+  background: #FFF; border-radius: 20px; padding: 40px 30px 30px;
+  text-align: center; width: 100%; max-width: 340px;
+}
+.confirm-dialog-icon { font-size: 64px; margin-bottom: 16px; }
+.confirm-dialog-text { font-size: 18px; font-weight: 700; color: #1A1A1A; margin-bottom: 28px; }
+.confirm-dialog-actions { display: flex; gap: 12px; }
+.confirm-dialog-btn {
+  flex: 1; padding: 16px; border-radius: 12px; border: 1px solid #E0E0E0;
+  font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit;
+  transition: all 0.15s;
+}
+.confirm-dialog-btn.primary {
+  background: #1A1A1A; color: #FFF; border-color: #1A1A1A;
+}
+.confirm-dialog-btn:active { transform: scale(0.96); }
+
+/* VIP banner */
+.store-vip-banner {
+  background: linear-gradient(135deg, rgba(100,130,180,0.4) 0%, rgba(80,100,150,0.3) 100%);
+  border-radius: 16px; padding: 24px 20px; margin-bottom: 20px;
+  position: relative; overflow: hidden;
+}
+.store-vip-title { font-size: 28px; font-weight: 900; color: #FFF; margin-bottom: 4px; }
+.store-vip-sub { font-size: 14px; color: rgba(255,255,255,0.6); margin-bottom: 12px; }
+.store-vip-price { font-size: 36px; font-weight: 900; color: #FFF; }
+.store-vip-original { font-size: 14px; color: rgba(255,255,255,0.4); text-decoration: line-through; margin-left: 8px; }
 `;
 
 // ──── Helper: Format seconds to MM:SS ────
@@ -1535,6 +1775,16 @@ export default function App() {
   const [notifCoupon, setNotifCoupon] = useState(false);
   const [notifLaundry, setNotifLaundry] = useState(false);
   const [showNotAvailable, setShowNotAvailable] = useState(false);
+  const [pointsHidden, setPointsHidden] = useState(false);
+  const [showPointsInfo, setShowPointsInfo] = useState(false);
+  const [showTransactionPage, setShowTransactionPage] = useState(false);
+  const [txFilter, setTxFilter] = useState('all');
+  const [showMyCouponsPage, setShowMyCouponsPage] = useState(false);
+  const [myCouponTab, setMyCouponTab] = useState('active');
+  const [showCouponStore, setShowCouponStore] = useState(false);
+  const [couponStoreTab, setCouponStoreTab] = useState('gift');
+  const [selectedStoreCoupon, setSelectedStoreCoupon] = useState(null);
+  const [showPurchaseConfirm, setShowPurchaseConfirm] = useState(false);
   const [dryExtend, setDryExtend] = useState(0);
   const [usageHistory, setUsageHistory] = useState([
     { id: 'h1', date: '2026-03-20 14:30', store: '悠洗自助洗衣', machine: '洗脫烘2號', mode: '洗脫烘-標準', amount: 160, status: 'completed' },
@@ -1932,7 +2182,7 @@ export default function App() {
               </div>
               <div className="dark-header-brand">雲管家</div>
               <div className="header-actions">
-                <button className="header-icon-btn" onClick={() => window.open('https://line.me/R/ti/p/@cloud-butler', '_blank')} title="LINE 官方帳號">
+                <button className="header-icon-btn" onClick={() => window.open('https://line.me/R/ti/p/@ypure', '_blank')} title="LINE 官方帳號">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="#06C755">
                     <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/>
                   </svg>
@@ -1966,25 +2216,39 @@ export default function App() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                     <div className="home-wallet-title" style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 0 }}>
                       點數餘額
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.4)" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                      <button onClick={() => setPointsHidden(!pointsHidden)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, display: 'flex', alignItems: 'center' }}>
+                        {pointsHidden ? (
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.5)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                        ) : (
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.5)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        )}
+                      </button>
                     </div>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.35)" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                    <button onClick={() => setShowPointsInfo(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, display: 'flex', alignItems: 'center' }}>
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.35)" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                    </button>
                   </div>
-                  <div className="home-wallet-points">{points}<span>點</span></div>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
+                    <div className="home-wallet-points" style={{ marginBottom: 0 }}>
+                      {pointsHidden ? (
+                        <span style={{ fontSize: 36, letterSpacing: 6 }}>✱ ✱ ✱ ✱</span>
+                      ) : (
+                        <>{points}<span>點</span></>
+                      )}
+                    </div>
                     <button className="home-wallet-btn topup" onClick={handleTopup} style={{ flex: 'none', padding: '10px 24px', borderRadius: 20, display: 'flex', alignItems: 'center', gap: 6 }}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
                       儲值
                     </button>
                   </div>
                   <div className="wallet-bottom-links">
-                    <button className="wallet-bottom-link" onClick={() => switchTab('history')}>
+                    <button className="wallet-bottom-link" onClick={() => { setTxFilter('all'); setShowTransactionPage(true); }}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.5)" strokeWidth="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2 2"/></svg>
                       交易記錄
                       <span className="wallet-link-arrow">···→</span>
                     </button>
-                    <button className="wallet-bottom-link" onClick={() => switchTab('profile')}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.5)" strokeWidth="2"><path d="M5 12h30v4a4 4 0 010 8v4H5v-4a4 4 0 010-8V12z" transform="scale(0.6) translate(2,4)"/></svg>
+                    <button className="wallet-bottom-link" onClick={() => { setMyCouponTab('active'); setShowMyCouponsPage(true); }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.5)" strokeWidth="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg>
                       我的優惠
                       <span className="wallet-link-arrow">···→</span>
                     </button>
@@ -2022,6 +2286,34 @@ export default function App() {
                 );
               })()}
 
+              {/* ── 功能總覽 ── */}
+              <div className="section-title-row">
+                <span className="section-title-bar"></span>
+                <span className="section-title-text">功能總覽</span>
+              </div>
+
+              <div className="home-grid">
+                <div className="home-grid-card home-grid-card-large" onClick={() => { setShowCouponStore(true); }} style={{ gridRow: 'span 2' }}>
+                  <div className="home-grid-icon"><IconCoupon size={48} color="#888" /></div>
+                  <div className="home-grid-label">優惠中心</div>
+                  <div className="home-grid-sub">洗衣天天享折扣</div>
+                </div>
+                <div className="home-grid-card home-grid-card-horizontal" onClick={() => switchTab('wash')}>
+                  <div>
+                    <div className="home-grid-label">機器狀態</div>
+                    <div className="home-grid-sub">查詢狀態最即時</div>
+                  </div>
+                  <IconMachine size={28} color="#888" />
+                </div>
+                <div className="home-grid-card home-grid-card-horizontal" onClick={() => switchTab('history')}>
+                  <div>
+                    <div className="home-grid-label">最新消息</div>
+                    <div className="home-grid-sub">活動訊息不漏接</div>
+                  </div>
+                  <IconNews size={28} color="#888" />
+                </div>
+              </div>
+
               <div className="home-quick-row">
                 <button className="home-quick-item" onClick={() => switchTab('wash')}>
                   <div className="home-quick-icon"><IconWasher size={24} color="#AAA" /></div>
@@ -2033,38 +2325,12 @@ export default function App() {
                 </button>
                 <button className="home-quick-item" onClick={() => switchTab('wash')}>
                   <div className="home-quick-icon"><IconStore size={24} color="#AAA" /></div>
-                  <div className="home-quick-label">門市查詢</div>
+                  <div className="home-quick-label">日光門市</div>
                 </button>
-                <button className="home-quick-item" onClick={() => switchTab('profile')}>
+                <button className="home-quick-item" onClick={() => setShowNotAvailable(true)}>
                   <div className="home-quick-icon"><IconShirt size={24} color="#AAA" /></div>
-                  <div className="home-quick-label">優惠中心</div>
+                  <div className="home-quick-label">代洗烘折</div>
                 </button>
-              </div>
-
-              <div className="home-grid">
-                <div className="home-grid-card" onClick={() => switchTab('wash')} style={{ gridRow: 'span 2' }}>
-                  <div className="home-grid-icon"><IconCoupon size={48} color="#888" /></div>
-                  <div className="home-grid-label">優惠中心</div>
-                  <div className="home-grid-sub">洗衣天天享折扣</div>
-                </div>
-                <div className="home-grid-card" onClick={() => switchTab('wash')}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <div className="home-grid-label">機器狀態</div>
-                      <div className="home-grid-sub">查詢狀態最即時</div>
-                    </div>
-                    <IconMachine size={28} color="#888" />
-                  </div>
-                </div>
-                <div className="home-grid-card" onClick={() => switchTab('history')}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <div className="home-grid-label">最新消息</div>
-                      <div className="home-grid-sub">活動訊息不漏接</div>
-                    </div>
-                    <IconNews size={28} color="#888" />
-                  </div>
-                </div>
               </div>
 
               <div className="section-divider">
@@ -2706,6 +2972,401 @@ export default function App() {
                 {payMethod === 'wallet' ? '錢包付款' : 'LINE Pay'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ Points Info Modal ═══ */}
+      {showPointsInfo && (
+        <div className="modal-overlay" onClick={() => setShowPointsInfo(false)}>
+          <div className="modal-sheet" onClick={e => e.stopPropagation()} style={{ maxHeight: '85vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <div className="modal-title" style={{ margin: 0 }}>儲值點數說明</div>
+              <button onClick={() => setShowPointsInfo(false)} style={{ background: 'none', border: 'none', fontSize: 24, color: 'var(--text-sub)', cursor: 'pointer', padding: '4px 8px' }}>✕</button>
+            </div>
+
+            <div style={{ background: 'var(--card)', borderRadius: 16, padding: '22px 20px', marginBottom: 16, border: '1px solid var(--card-border)' }}>
+              <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ background: '#06C755', borderRadius: 6, width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>⬆</span>
+                儲值流程
+              </div>
+              <div style={{ fontSize: 15, lineHeight: 2, color: 'var(--text-sub)' }}>
+                <div><strong style={{ color: 'var(--text)' }}>1.</strong> 客人以現金支付儲值金額，例如1000元。</div>
+                <div><strong style={{ color: 'var(--text)' }}>2.</strong> 店家將以1:1比例將該金額轉換成等值點數（如1000點），點數會記錄在客人帳戶中。</div>
+                <div><strong style={{ color: 'var(--text)' }}>3.</strong> 點數可用於店內自助洗衣機或烘乾機的消費，使用時系統會自動扣除相應點數。</div>
+              </div>
+            </div>
+
+            <div style={{ background: 'var(--card)', borderRadius: 16, padding: '22px 20px', marginBottom: 16, border: '1px solid var(--card-border)' }}>
+              <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ background: '#06C755', borderRadius: 6, width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>✅</span>
+                使用方式
+              </div>
+              <div style={{ fontSize: 15, lineHeight: 2, color: 'var(--text-sub)' }}>
+                <div><strong style={{ color: 'var(--text)' }}>1.</strong> 客人可隨時於會員系統中查詢點數餘額。</div>
+                <div><strong style={{ color: 'var(--text)' }}>2.</strong> 點數即時生效，可直接用於消費，不需額外兌換。</div>
+                <div><strong style={{ color: 'var(--text)' }}>3.</strong> 使用點數時，請依照機器或系統指示操作。</div>
+              </div>
+            </div>
+
+            <div style={{ background: 'var(--card)', borderRadius: 16, padding: '22px 20px', border: '1px solid var(--card-border)' }}>
+              <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ background: '#F5A623', borderRadius: 6, width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>⚠</span>
+                注意事項
+              </div>
+              <div style={{ fontSize: 15, lineHeight: 2, color: 'var(--text-sub)' }}>
+                <div><strong style={{ color: 'var(--text)' }}>1.</strong> 點數不可兌換現金，僅限於店內消費使用。</div>
+                <div><strong style={{ color: 'var(--text)' }}>2.</strong> 請注意點數是否有使用期限，過期可能會失效。</div>
+                <div><strong style={{ color: 'var(--text)' }}>3.</strong> 儲值優惠或消費折扣，將於儲值時一併告知。</div>
+                <div><strong style={{ color: 'var(--text)' }}>4.</strong> 儲值點數屬於記名制，請妥善保管會員帳號或識別方式。</div>
+                <div><strong style={{ color: 'var(--text)' }}>5.</strong> 如遇系統異常或消費問題，請立即聯繫店家客服協助處理。</div>
+                <div><strong style={{ color: 'var(--text)' }}>6.</strong> 儲值後若需退費，需依店家退費政策辦理。</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ Transaction History Full Page ═══ */}
+      {showTransactionPage && (
+        <div className="fullpage-overlay">
+          <div className="fullpage-header">
+            <div className="fullpage-header-top">
+              <button className="fullpage-back" onClick={() => setShowTransactionPage(false)}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFF" strokeWidth="2" strokeLinecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <div className="fullpage-title">交易記錄</div>
+            </div>
+            <div className="fullpage-tabs">
+              {[
+                { key: 'all', label: '全部' },
+                { key: 'topup', label: '儲值記錄' },
+                { key: 'payment', label: '店內付款' },
+                { key: 'coupon', label: '優惠券記錄' },
+              ].map(t => (
+                <button key={t.key} className={`fullpage-tab ${txFilter === t.key ? 'active' : ''}`}
+                  onClick={() => setTxFilter(t.key)}>{t.label}</button>
+              ))}
+            </div>
+          </div>
+          <div className="fullpage-body">
+            {(() => {
+              const allRecords = [
+                ...transactions.map(tx => ({ ...tx, recordType: tx.type })),
+              ];
+              coupons.filter(c => c.used).forEach(c => {
+                allRecords.push({ id: `cr-${c.id}`, name: `使用優惠券：${c.name}`, date: '', amount: 0, recordType: 'coupon' });
+              });
+              const filtered = txFilter === 'all' ? allRecords : allRecords.filter(r => r.recordType === txFilter);
+              if (filtered.length === 0) return (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', color: 'rgba(255,255,255,0.4)' }}>
+                  <div style={{ fontSize: 18, fontWeight: 600 }}>暫無訂單數據</div>
+                </div>
+              );
+              return filtered.map(r => (
+                <div key={r.id} style={{ background: 'var(--card)', borderRadius: 12, padding: '16px 18px', marginBottom: 10, border: '1px solid var(--card-border)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontWeight: 700, fontSize: 15 }}>
+                      {r.recordType === 'topup' ? '$ ' : r.recordType === 'coupon' ? '🎫 ' : ''}{r.name}
+                    </div>
+                    {r.amount !== 0 && (
+                      <div style={{ fontWeight: 700, fontSize: 16, color: r.amount > 0 ? 'var(--success)' : 'var(--danger)' }}>
+                        {r.amount > 0 ? '+' : ''}{r.amount} 點
+                      </div>
+                    )}
+                  </div>
+                  {r.date && <div style={{ fontSize: 13, color: 'var(--text-sub)', marginTop: 4 }}>{r.date}</div>}
+                </div>
+              ));
+            })()}
+          </div>
+        </div>
+      )}
+
+      {/* ═══ My Coupons Full Page ═══ */}
+      {showMyCouponsPage && !showCouponStore && (
+        <div className="fullpage-overlay">
+          <div className="fullpage-header">
+            <div className="fullpage-header-top">
+              <button className="fullpage-back" onClick={() => setShowMyCouponsPage(false)}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFF" strokeWidth="2" strokeLinecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <div className="fullpage-title">我的優惠</div>
+            </div>
+            <div className="fullpage-tabs">
+              {[
+                { key: 'active', label: '使用中' },
+                { key: 'unused', label: '未使用' },
+                { key: 'expired', label: '已過期' },
+              ].map(t => (
+                <button key={t.key} className={`fullpage-tab ${myCouponTab === t.key ? 'active' : ''}`}
+                  onClick={() => setMyCouponTab(t.key)}>{t.label}</button>
+              ))}
+            </div>
+          </div>
+          <div className="fullpage-body" style={{ paddingBottom: 100 }}>
+            {(() => {
+              let filtered;
+              if (myCouponTab === 'active') filtered = coupons.filter(c => c.used);
+              else if (myCouponTab === 'unused') filtered = coupons.filter(c => !c.used && !c.expired);
+              else filtered = coupons.filter(c => c.expired);
+              if (filtered.length === 0) return (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '50vh', color: 'rgba(255,255,255,0.4)' }}>
+                  <div style={{ fontSize: 18, fontWeight: 600 }}>暫無優惠券</div>
+                </div>
+              );
+              return filtered.map(c => (
+                <div key={c.id} style={{ background: 'var(--card)', borderRadius: 12, padding: '16px 18px', marginBottom: 10, border: '1px solid var(--card-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: 15 }}>{c.name}</div>
+                    <div style={{ fontSize: 13, color: 'var(--text-sub)', marginTop: 4 }}>
+                      {c.desc || (c.minSpend > 0 ? `消費滿 $${c.minSpend} 可用` : '無最低消費')}
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--text-hint)', marginTop: 2 }}>有效期限：{c.expiry}</div>
+                  </div>
+                  <div style={{ fontWeight: 900, fontSize: 18, color: myCouponTab === 'expired' ? 'var(--text-hint)' : 'var(--accent)' }}>
+                    {c.type === 'fixed' ? `-$${c.discount}` : `${100 - c.discount}折`}
+                  </div>
+                </div>
+              ));
+            })()}
+          </div>
+          <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, padding: '16px 20px', background: '#000', zIndex: 1101 }}>
+            <button onClick={() => { setCouponStoreTab('gift'); setShowCouponStore(true); }}
+              style={{ width: '100%', padding: '16px', borderRadius: 14, border: '1px solid rgba(255,255,255,0.2)', background: '#1A1A1A', color: '#FFF', fontSize: 17, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+              去購買優惠券
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ Coupon Store Full Page ═══ */}
+      {showCouponStore && !selectedStoreCoupon && (
+        <div className="fullpage-overlay">
+          <div className="fullpage-header">
+            <div className="fullpage-header-top">
+              <button className="fullpage-back" onClick={() => setShowCouponStore(false)}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFF" strokeWidth="2" strokeLinecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <div className="fullpage-title">優惠中心</div>
+            </div>
+          </div>
+          <div className="fullpage-body">
+            {/* VIP Banner */}
+            {couponStoreTab === 'gift' && (
+              <div className="store-vip-banner">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <div style={{ fontSize: 28, fontWeight: 900, color: '#FFF' }}>歡迎成為洗衣粉</div>
+                  <span style={{ background: 'rgba(255,255,255,0.2)', borderRadius: 6, padding: '2px 8px', fontSize: 13, fontWeight: 700, color: '#FFF' }}>VIP</span>
+                </div>
+                <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', marginBottom: 14 }}>衣隨心動煥光彩，每件都是粉絲級呵護</div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                  <span style={{ fontSize: 42, fontWeight: 900, color: '#C8A84E' }}>50</span>
+                  <span style={{ fontSize: 16, color: 'rgba(255,255,255,0.7)' }}>點折扣券</span>
+                  <span style={{ fontSize: 20, fontWeight: 900, color: '#C8A84E' }}>免費</span>
+                  <span style={{ fontSize: 16, color: 'rgba(255,255,255,0.7)' }}>領取</span>
+                </div>
+              </div>
+            )}
+            {couponStoreTab === 'monthly' && (
+              <div className="store-vip-banner" style={{ background: 'linear-gradient(135deg, rgba(80,70,120,0.5) 0%, rgba(60,50,100,0.4) 100%)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <div style={{ fontSize: 36, fontWeight: 900, color: '#FFF' }}>夜猫</div>
+                  <span style={{ background: 'rgba(255,255,255,0.2)', borderRadius: 6, padding: '2px 8px', fontSize: 13, fontWeight: 700, color: '#FFF' }}>VIP</span>
+                </div>
+                <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', marginBottom: 12 }}>在深夜，靜靜完成生活的儀式</div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                  <span style={{ fontSize: 42, fontWeight: 900, color: '#FFF' }}>5500</span>
+                  <span style={{ fontSize: 16, color: 'rgba(255,255,255,0.5)' }}>點</span>
+                </div>
+                <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.4)' }}>原價 <span style={{ textDecoration: 'line-through' }}>19320</span></div>
+              </div>
+            )}
+
+            {/* Store Tabs */}
+            <div className="fullpage-tabs" style={{ marginBottom: 16 }}>
+              {[
+                { key: 'gift', label: '禮包', icon: '🎁' },
+                { key: 'monthly', label: '包月', icon: '👑' },
+                { key: 'festival', label: '節慶', icon: '🎉' },
+              ].map(t => (
+                <button key={t.key} className={`fullpage-tab ${couponStoreTab === t.key ? 'active' : ''}`}
+                  style={{ borderBottomColor: couponStoreTab === t.key ? '#4A90D9' : 'transparent' }}
+                  onClick={() => setCouponStoreTab(t.key)}>
+                  {couponStoreTab === t.key && <span style={{ marginRight: 4 }}>{t.icon}</span>}
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Ticket Cards */}
+            {(STORE_COUPONS[couponStoreTab] || []).length === 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '40vh', color: 'rgba(255,255,255,0.4)' }}>
+                <div style={{ fontSize: 18, fontWeight: 600 }}>暫無優惠券</div>
+              </div>
+            ) : (
+              (STORE_COUPONS[couponStoreTab] || []).map(sc => (
+                <div key={sc.id} className="ticket-card">
+                  <div className="ticket-left">
+                    <div className="ticket-divider" />
+                    <div className="ticket-badge">{sc.discount}</div>
+                    <div className="ticket-name">{sc.name}</div>
+                    <div className="ticket-desc">
+                      ·{sc.desc}<br/>
+                      ·全台雲管家均可使用<br/>
+                      ·{sc.validity.replace('自購買起', '購買後')}<br/>
+                      ·{sc.device}
+                    </div>
+                  </div>
+                  <div className="ticket-right">
+                    <div><span className="ticket-price">{sc.price}</span><span className="ticket-price-unit">點</span></div>
+                    <div className="ticket-original">原价：{sc.originalPrice}</div>
+                    <button className="ticket-buy-btn" onClick={() => setSelectedStoreCoupon(sc)}>立即購買</button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ═══ Coupon Payment Full Page ═══ */}
+      {selectedStoreCoupon && (
+        <div className="fullpage-overlay" style={{ background: '#F5F5F5' }}>
+          <div className="fullpage-header" style={{ paddingBottom: 16 }}>
+            <div className="fullpage-header-top">
+              <button className="fullpage-back" onClick={() => setSelectedStoreCoupon(null)}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFF" strokeWidth="2" strokeLinecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <div className="fullpage-title">優惠券付款</div>
+            </div>
+          </div>
+          <div className="fullpage-body" style={{ background: '#F5F5F5', paddingBottom: 100 }}>
+            {/* Price bar */}
+            <div className="cpay-price-bar">
+              <div className="cpay-price-label">應付點數</div>
+              <div><span className="cpay-price-value">{selectedStoreCoupon.price}</span><span className="cpay-price-unit">點</span></div>
+            </div>
+
+            {/* Coupon info */}
+            <div className="cpay-info-card">
+              <div className="cpay-info-row">
+                <span className="cpay-info-label">優惠券名稱</span>
+                <span className="cpay-info-value">{selectedStoreCoupon.name}</span>
+              </div>
+              <div className="cpay-info-row">
+                <span className="cpay-info-label">優惠券類型</span>
+                <span className="cpay-info-value">{selectedStoreCoupon.type}</span>
+              </div>
+            </div>
+
+            {/* Coupon details */}
+            <div className="cpay-detail-card">
+              <div className="cpay-detail-title">
+                <span style={{ background: '#06C755', borderRadius: 4, width: 22, height: 22, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: '#FFF' }}>✓</span>
+                優惠卷說明
+              </div>
+              <div className="cpay-detail-row">
+                <span className="cpay-detail-label">使用說明：</span>
+                <span className="cpay-detail-value">{selectedStoreCoupon.desc}</span>
+              </div>
+              <div className="cpay-detail-row">
+                <span className="cpay-detail-label">使用時段：</span>
+                <span className="cpay-detail-value">{selectedStoreCoupon.timeSlot}</span>
+              </div>
+              <div className="cpay-detail-row">
+                <span className="cpay-detail-label">設備限制：</span>
+                <span className="cpay-detail-value">{selectedStoreCoupon.device}</span>
+              </div>
+              <div className="cpay-detail-row">
+                <span className="cpay-detail-label">使用期限：</span>
+                <span className="cpay-detail-value">{selectedStoreCoupon.validity}</span>
+              </div>
+              <div className="cpay-detail-row">
+                <span className="cpay-detail-label">適用店點：</span>
+                <span className="cpay-detail-value">{selectedStoreCoupon.stores}</span>
+              </div>
+              <div className="cpay-detail-row">
+                <span className="cpay-detail-label">使用方式：</span>
+                <span className="cpay-detail-value">{selectedStoreCoupon.usage}</span>
+              </div>
+              <div className="cpay-detail-row">
+                <span className="cpay-detail-label">每人限購：</span>
+                <span className="cpay-detail-value">{selectedStoreCoupon.purchaseLimit}</span>
+              </div>
+            </div>
+
+            {/* Warning section */}
+            <div className="cpay-warning-card">
+              <div className="cpay-warning-title">
+                <span style={{ fontSize: 18 }}>⚠️</span> 注意事項
+              </div>
+              <div className="cpay-warning-item"><strong>1.</strong> 優惠卷不得兌換現金，逾期作廢。</div>
+              <div className="cpay-warning-item"><strong>2.</strong> 如發現有重複帳號註冊、濫用優惠或操作系統漏洞等情形，本公司有權取消該優惠券使用資格並不予退費，且保留法律追訴權利。</div>
+              <div className="cpay-warning-item"><strong>3.</strong> 本公司保留最終修改、變更、取消本活動之權利。</div>
+            </div>
+
+            {/* Refund section */}
+            <div className="cpay-warning-card">
+              <div className="cpay-warning-title">
+                <span style={{ fontSize: 18 }}>⚠️</span> 退費說明
+              </div>
+              <div className="cpay-warning-item"><strong>1.</strong> 未使用之優惠券可於購買日起7日內申請退還點數，逾期恕不受理。</div>
+              <div className="cpay-warning-item"><strong>2.</strong> 優惠券一經使用，即視為您同意本條款，系統將自動記錄使用次數與折抵點數，並視為開始履約。</div>
+              <div className="cpay-warning-item"><strong>3.</strong> 優惠券之使用將依據實際折抵點數進行比例計算，若累計折抵點數未超過原付款點數，可申請退還剩餘點數； 已折抵點數以該產品對應之單次標準點數價值計算。</div>
+              <div className="cpay-warning-item"><strong>4.</strong> 部分優惠券可能包含額外贈送之使用次數或點數，該部分不具退款價值，不得由請折算退款。</div>
+              <div className="cpay-warning-item"><strong>5.</strong> 若需申請退款，請聯繫客服，並提供購買憑證與會員資訊。客服將於3至5個工作日內協助處理。</div>
+            </div>
+          </div>
+
+          {/* Bottom bar */}
+          <div className="cpay-bottom-bar">
+            <label style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'rgba(255,255,255,0.35)', fontSize: 14 }}>
+              <input type="checkbox" style={{ width: 18, height: 18, accentColor: '#666' }} /> 自動續費
+            </label>
+            <button className="cpay-confirm-btn" onClick={() => setShowPurchaseConfirm(true)}>確認付款</button>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ Purchase Confirm Dialog ═══ */}
+      {showPurchaseConfirm && selectedStoreCoupon && (
+        <div className="confirm-dialog-overlay" onClick={() => setShowPurchaseConfirm(false)}>
+          <div className="confirm-dialog" onClick={e => e.stopPropagation()}>
+            {points >= selectedStoreCoupon.price ? (
+              <>
+                <div className="confirm-dialog-icon">
+                  <svg width="80" height="80" viewBox="0 0 80 80" fill="none"><rect x="15" y="22" width="50" height="36" rx="4" stroke="#888" strokeWidth="3"/><path d="M15 30h50" stroke="#888" strokeWidth="3"/><circle cx="40" cy="42" r="6" stroke="#888" strokeWidth="2"/><path d="M28 18l4-6M52 18l-4-6" stroke="#888" strokeWidth="2" strokeLinecap="round"/></svg>
+                </div>
+                <div className="confirm-dialog-text">是否確認購買？</div>
+                <div className="confirm-dialog-actions">
+                  <button className="confirm-dialog-btn" onClick={() => setShowPurchaseConfirm(false)}>否</button>
+                  <button className="confirm-dialog-btn primary" onClick={() => {
+                    setPoints(prev => prev - selectedStoreCoupon.price);
+                    setTransactions(prev => [{ id: `t${Date.now()}`, name: `購買優惠券：${selectedStoreCoupon.name}`, date: new Date().toISOString().split('T')[0], amount: -selectedStoreCoupon.price, type: 'coupon' }, ...prev]);
+                    setCoupons(prev => [...prev, { id: `c${Date.now()}`, name: selectedStoreCoupon.name, type: 'fixed', discount: Math.round(selectedStoreCoupon.originalPrice - selectedStoreCoupon.price), minSpend: 0, expiry: '2026-06-30', used: false, category: couponStoreTab === 'monthly' ? 'monthly' : 'coupon', desc: selectedStoreCoupon.desc }]);
+                    setShowPurchaseConfirm(false);
+                    setSelectedStoreCoupon(null);
+                    showToast(`購買成功！已獲得「${selectedStoreCoupon.name}」優惠券`);
+                  }}>確認購買</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="confirm-dialog-icon">
+                  <svg width="80" height="80" viewBox="0 0 80 80" fill="none"><path d="M40 15L10 65h60L40 15z" stroke="#F5A623" strokeWidth="3" fill="none"/><path d="M40 35v15M40 55h.01" stroke="#F5A623" strokeWidth="3" strokeLinecap="round"/><path d="M25 20l-4-4M55 20l4-4M20 40l-5-2M60 40l5-2" stroke="#888" strokeWidth="2" strokeLinecap="round"/></svg>
+                </div>
+                <div className="confirm-dialog-text">您的余額不足</div>
+                <div className="confirm-dialog-actions">
+                  <button className="confirm-dialog-btn primary" style={{ flex: 1 }} onClick={() => {
+                    setShowPurchaseConfirm(false);
+                    setSelectedStoreCoupon(null);
+                    setShowCouponStore(false);
+                    setShowMyCouponsPage(false);
+                  }}>回到首頁</button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
