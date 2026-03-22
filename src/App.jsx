@@ -2161,6 +2161,7 @@ export default function App() {
     setSelectedMachine(machineId);
     setSelectedMode(null);
     setSelectedCoupon(null);
+    if (machineId.includes('-d')) { setDryExtend(5); }
     setScreen('modes');
   };
 
@@ -2871,8 +2872,31 @@ export default function App() {
                     </>
                   )}
 
-                  {/* Wash modes grid */}
-                  {!selectedMachine.includes('-v') && (
+                  {/* Dryer-only form */}
+                  {selectedMachine.includes('-d') && (
+                    <>
+                      <div className="extend-row">
+                        <div className="extend-label">烘乾延長</div>
+                        <select className="extend-select" value={dryExtend} onChange={e => { setDryExtend(Number(e.target.value)); if (!selectedMode) setSelectedMode({ id: 'dryextend', name: '烘乾延長', price: Number(e.target.value) * 2, minutes: Number(e.target.value) }); else setSelectedMode({ ...selectedMode, price: Number(e.target.value) * 2, minutes: Number(e.target.value) }); }}>
+                          <option value={5}>5min</option>
+                          <option value={10}>10min</option>
+                          <option value={15}>15min</option>
+                        </select>
+                      </div>
+                      <div className="coupon-select-row" onClick={() => { if (payMethod !== 'wallet') { setCouponTab('coupon'); setShowCouponModal(true); } }}>
+                        <div className="coupon-select-label">使用優惠</div>
+                        <div className="coupon-select-value">
+                          {payMethod === 'wallet'
+                            ? <span style={{ color: '#E57373', fontSize: 13, background: 'rgba(229,115,115,0.12)', padding: '4px 10px', borderRadius: 6 }}>單次付款無法使用優惠</span>
+                            : <span style={{ color: 'var(--text-hint)' }}>請選擇優惠券 ▼</span>
+                          }
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Wash modes grid - only for washer machines */}
+                  {selectedMachine.includes('-m') && (
                     <div className="mode-grid">
                       {MODES.map(mode => (
                         <div key={mode.id}
@@ -2886,7 +2910,7 @@ export default function App() {
                   )}
 
                   {/* Detergent options */}
-                  {!selectedMachine.includes('-v') && selectedMode && selectedMode.id !== 'dryonly' && (
+                  {selectedMachine.includes('-m') && selectedMode && selectedMode.id !== 'dryonly' && (
                     <div className="addon-row" style={{ marginTop: 10 }}>
                       {[
                         { key: 'detergent', label: '洗衣精' },
@@ -2903,7 +2927,7 @@ export default function App() {
                   )}
 
                   {/* Dryer extend */}
-                  {!selectedMachine.includes('-v') && selectedMode && selectedMode.id !== 'washonly' && (
+                  {selectedMachine.includes('-m') && selectedMode && selectedMode.id !== 'washonly' && (
                     <div className="extend-row">
                       <div className="extend-label">烘乾延長</div>
                       <select className="extend-select" value={dryExtend} onChange={e => setDryExtend(Number(e.target.value))}>
@@ -2917,7 +2941,7 @@ export default function App() {
                   )}
 
                   {/* Temperature */}
-                  {!selectedMachine.includes('-v') && selectedMode && selectedMode.id !== 'washonly' && (
+                  {selectedMachine.includes('-m') && selectedMode && selectedMode.id !== 'washonly' && (
                     <div className="temp-row">
                       <div className="temp-label">烘衣溫度</div>
                       {['low', 'mid', 'high'].map(t => (
@@ -2930,7 +2954,7 @@ export default function App() {
                   )}
 
                   {/* Coupon select */}
-                  {!selectedMachine.includes('-v') && selectedMode && (
+                  {selectedMachine.includes('-m') && selectedMode && (
                     <div className="coupon-select-row" onClick={() => { if (payMethod !== 'wallet' && !dryExtend) { setCouponTab('coupon'); setShowCouponModal(true); } }}>
                       <div className="coupon-select-label">使用優惠</div>
                       <div className="coupon-select-value">
@@ -2957,10 +2981,10 @@ export default function App() {
                   )}
 
                   {/* Bottom payment bar */}
-                  {selectedMode && (
+                  {(selectedMode || selectedMachine.includes('-d')) && (
                     <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: '#1A1A1A', padding: '18px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 200, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
                       <div style={{ fontSize: 18, color: '#FFF' }}>
-                        付款金額 <span style={{ fontSize: 28, fontWeight: 900 }}>$ {getFinalPrice()}</span>
+                        付款金額 <span style={{ fontSize: 28, fontWeight: 900 }}>$ {selectedMachine.includes('-d') ? (dryExtend || 5) * 2 : getFinalPrice()}</span>
                       </div>
                       <button style={{ background: '#FFF', color: '#1A1A1A', border: 'none', borderRadius: 10, padding: '14px 28px', fontSize: 16, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}
                         onClick={() => setScreen('confirm')}>確認付款</button>
