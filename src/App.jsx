@@ -2628,15 +2628,45 @@ export default function App() {
               )}
 
               {screen === 'modes' && selectedMachine && (
-                <>
-                  <button className="back-btn" onClick={goBack}>← 返回機器選擇</button>
-                  <div className="sec-title">店內消費</div>
-                  <div style={{ fontSize: 18, color: 'var(--text-sub)', marginBottom: 6 }}>
-                    {selectedStore?.name} — 洗脫烘{selectedMachine.split('-m')[1]}號(中型)
+                <div style={{ paddingBottom: 100 }}>
+                  <div className="section-title-row" style={{ marginTop: 0 }}>
+                    <span className="section-title-bar"></span>
+                    <span className="section-title-text">門市選擇</span>
                   </div>
-                  <div className="section-divider">
-                    <span className="section-divider-text">選擇洗衣模式</span>
+
+                  {/* Store card */}
+                  <div style={{ background: '#FFF', borderRadius: 16, padding: '18px 20px', marginBottom: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+                    onClick={() => { setScreen('stores'); }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                      <IconWasher size={40} color="#555" />
+                      <div>
+                        <div style={{ fontSize: 17, fontWeight: 800, color: '#1A1A1A' }}>雲管家自助洗衣</div>
+                        <div style={{ fontSize: 14, color: '#666', marginTop: 2 }}>{selectedStore?.name}</div>
+                      </div>
+                    </div>
+                    <span style={{ fontSize: 18, color: '#AAA' }}>▼</span>
                   </div>
+
+                  {/* Payment toggle */}
+                  <div className="pay-toggle">
+                    <button className={`pay-toggle-btn ${payMethod === 'linepay' ? 'active' : ''}`}
+                      onClick={() => setPayMethod('linepay')}>錢包付款</button>
+                    <button className={`pay-toggle-btn ${payMethod === 'wallet' ? 'active' : ''}`}
+                      onClick={() => setPayMethod('wallet')}>單次付款</button>
+                  </div>
+
+                  {/* Machine selector */}
+                  <div style={{ background: '#FFF', borderRadius: 14, padding: '16px 20px', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+                    onClick={goBack}>
+                    <div style={{ fontSize: 16, fontWeight: 600, color: '#1A1A1A' }}>機器選擇</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <WasherIcon running={false} />
+                      <span style={{ fontSize: 15, fontWeight: 600, color: '#333' }}>洗脫烘{selectedMachine.split('-m')[1]}號(大型)</span>
+                      <span style={{ color: '#AAA' }}>▼</span>
+                    </div>
+                  </div>
+
+                  {/* Wash modes grid */}
                   <div className="mode-grid">
                     {MODES.map(mode => (
                       <div key={mode.id}
@@ -2644,36 +2674,47 @@ export default function App() {
                         onClick={() => { setSelectedMode(mode); setSelectedCoupon(null); }}>
                         <div className="mode-dot" style={{ background: mode.color }} />
                         <div className="mode-cell-name">{mode.name}</div>
-                        <div className="mode-cell-price">NT${mode.price}</div>
                       </div>
                     ))}
                   </div>
 
+                  {/* Detergent options */}
                   {selectedMode && selectedMode.id !== 'dryonly' && (
-                    <>
-                      <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-sub)', marginTop: 16, marginBottom: 4 }}>洗劑選擇</div>
-                      <div className="addon-row">
-                        {[
-                          { key: 'detergent', label: '洗衣精' },
-                          { key: 'softener', label: '柔軟精' },
-                          { key: 'degreaser', label: '脫脂酵素' },
-                          { key: 'antibacterial', label: '除菌酵素' },
-                        ].map(a => (
-                          <button key={a.key} className={`addon-chip ${addons[a.key] ? 'active' : ''}`}
-                            onClick={() => setAddons(prev => ({ ...prev, [a.key]: !prev[a.key] }))}>
-                            {addons[a.key] ? '✓ ' : ''}{a.label}
-                          </button>
-                        ))}
-                      </div>
-                    </>
+                    <div className="addon-row" style={{ marginTop: 10 }}>
+                      {[
+                        { key: 'detergent', label: '洗衣精' },
+                        { key: 'softener', label: '柔軟精' },
+                        { key: 'degreaser', label: '脫脂酵素' },
+                        { key: 'antibacterial', label: '除菌酵素' },
+                      ].map(a => (
+                        <button key={a.key} className={`addon-chip ${addons[a.key] ? 'active' : ''}`}
+                          onClick={() => setAddons(prev => ({ ...prev, [a.key]: !prev[a.key] }))}>
+                          {addons[a.key] ? '✓ ' : ''}{a.label}
+                        </button>
+                      ))}
+                    </div>
                   )}
 
+                  {/* Dryer extend */}
+                  {selectedMode && selectedMode.id !== 'washonly' && (
+                    <div className="extend-row">
+                      <div className="extend-label">烘乾延長</div>
+                      <select className="extend-select" value={dryExtend} onChange={e => setDryExtend(Number(e.target.value))}>
+                        <option value={0}>0min</option>
+                        <option value={4}>4min</option>
+                        <option value={10}>10min</option>
+                        <option value={20}>20min</option>
+                        <option value={30}>30min</option>
+                      </select>
+                    </div>
+                  )}
+
+                  {/* Temperature */}
                   {selectedMode && selectedMode.id !== 'washonly' && (
                     <div className="temp-row">
                       <div className="temp-label">烘衣溫度</div>
                       {['low', 'mid', 'high'].map(t => (
-                        <button key={t}
-                          className={`temp-btn ${dryTemp === t ? 'active' : ''}`}
+                        <button key={t} className={`temp-btn ${dryTemp === t ? 'active' : ''}`}
                           onClick={() => setDryTemp(t)}>
                           {t === 'low' ? '低溫' : t === 'mid' ? '中溫' : '高溫'}
                         </button>
@@ -2681,69 +2722,42 @@ export default function App() {
                     </div>
                   )}
 
-                  {selectedMode && selectedMode.id !== 'washonly' && (
-                    <div className="extend-row">
-                      <div className="extend-label">烘乾延長</div>
-                      <select className="extend-select" value={dryExtend} onChange={e => setDryExtend(Number(e.target.value))}>
-                        <option value={0}>0 min</option>
-                        <option value={10}>+10 min ($20)</option>
-                        <option value={20}>+20 min ($35)</option>
-                        <option value={30}>+30 min ($50)</option>
-                      </select>
-                    </div>
-                  )}
-
-                  {selectedMode && (
-                    <div style={{
-                      background: 'var(--card)', borderRadius: 'var(--radius-sm)',
-                      padding: '16px 18px', marginTop: 16,
-                      display: 'flex', justifyContent: 'space-between', fontSize: 18
-                    }}>
-                      <span style={{ color: 'var(--text-sub)' }}>預計時間</span>
-                      <span style={{ fontWeight: 700 }}>{selectedMode.minutes} 分鐘</span>
-                    </div>
-                  )}
-
-                  {selectedMode && (
-                    <>
-                      <div className="pay-toggle">
-                        <button
-                          className={`pay-toggle-btn ${payMethod === 'linepay' ? 'active' : ''}`}
-                          onClick={() => setPayMethod('linepay')}>
-                          錢包付款
-                        </button>
-                        <button
-                          className={`pay-toggle-btn ${payMethod === 'wallet' ? 'active' : ''}`}
-                          onClick={() => setPayMethod('wallet')}>
-                          單次付款
-                        </button>
-                      </div>
-                      {payMethod === 'wallet' && points < getFinalPrice() && (
-                        <div className="points-banner">
-                          <div className="points-banner-icon">⚠️</div>
-                          <div className="points-banner-text">
-                            餘額不足！需要 {getFinalPrice()} 點，目前只有 {points} 點
-                          </div>
-                          <button className="points-banner-btn" onClick={handleTopup}>儲值</button>
-                        </div>
-                      )}
-                    </>
-                  )}
-
+                  {/* Coupon select */}
                   {selectedMode && (
                     <div className="coupon-select-row" onClick={() => { setCouponTab('coupon'); setShowCouponModal(true); }}>
                       <div className="coupon-select-label">使用優惠</div>
                       <div className="coupon-select-value">
                         {selectedCoupon
                           ? `${selectedCoupon.name} (-$${selectedCoupon.type === 'fixed' ? selectedCoupon.discount : Math.round(selectedMode.price * selectedCoupon.discount / 100)})`
-                          : getApplicableCoupons().length > 0
-                            ? <span style={{ color: 'var(--accent)' }}>{getApplicableCoupons().length} 張可使用 →</span>
-                            : <span style={{ color: 'var(--text-hint)' }}>暫無可用優惠</span>
+                          : dryExtend > 0
+                            ? <span style={{ color: '#E57373', fontSize: 13, background: 'rgba(229,115,115,0.12)', padding: '4px 10px', borderRadius: 6 }}>延長使用無法使用優惠</span>
+                            : getApplicableCoupons().length > 0
+                              ? <span style={{ color: 'var(--text-hint)' }}>請選擇優惠券 ▼</span>
+                              : <span style={{ color: 'var(--text-hint)' }}>暫無可用優惠</span>
                         }
                       </div>
                     </div>
                   )}
-                </>
+
+                  {payMethod === 'wallet' && selectedMode && points < getFinalPrice() && (
+                    <div className="points-banner">
+                      <div className="points-banner-icon">⚠️</div>
+                      <div className="points-banner-text">餘額不足！需要 {getFinalPrice()} 點，目前只有 {points} 點</div>
+                      <button className="points-banner-btn" onClick={handleTopup}>儲值</button>
+                    </div>
+                  )}
+
+                  {/* Bottom payment bar */}
+                  {selectedMode && (
+                    <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: '#1A1A1A', padding: '18px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 200, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                      <div style={{ fontSize: 18, color: '#FFF' }}>
+                        付款金額 <span style={{ fontSize: 28, fontWeight: 900 }}>$ {getFinalPrice()}</span>
+                      </div>
+                      <button style={{ background: '#FFF', color: '#1A1A1A', border: 'none', borderRadius: 10, padding: '14px 28px', fontSize: 16, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}
+                        onClick={() => setScreen('confirm')}>確認付款</button>
+                    </div>
+                  )}
+                </div>
               )}
 
               {screen === 'result' && (
