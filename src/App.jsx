@@ -2240,12 +2240,38 @@ export default function App() {
   // ─── Payment callback ───
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('paymentResult') === 'success') {
+    // Support both URL formats: ?paymentResult=success and /payment-result?status=success
+    const paymentResult = params.get('paymentResult') || params.get('status');
+    const isPaymentCallback = window.location.pathname.includes('payment-result') || paymentResult;
+    if (paymentResult === 'success') {
       const transactionId = params.get('transactionId');
       const orderId = params.get('orderId');
+      // Restore pending order from localStorage
+      const pendingOrder = lsGet('ypure_pendingOrder', null);
+      if (pendingOrder) {
+        // Set machine as running
+        if (pendingOrder.machineId) {
+          setMachineStates(prev => ({
+            ...prev,
+            [pendingOrder.machineId]: { status: 'running', remaining: (pendingOrder.minutes || 65) * 60, mode: pendingOrder.mode || 'standard' },
+          }));
+        }
+        // Record in history
+        setUsageHistory(prev => [{
+          id: `h${Date.now()}`, date: new Date().toLocaleString('zh-TW'),
+          store: pendingOrder.storeName, machine: pendingOrder.machineName,
+          mode: pendingOrder.modeName || '洗脫烘', amount: pendingOrder.amount, status: 'completed',
+        }, ...prev]);
+        setTransactions(prev => [{ id: `t${Date.now()}`, name: pendingOrder.storeName, date: new Date().toISOString().split('T')[0], amount: -pendingOrder.amount, type: 'payment' }, ...prev]);
+        localStorage.removeItem('ypure_pendingOrder');
+      }
       if (transactionId && orderId) confirmPayment(transactionId, orderId);
-      window.history.replaceState({}, '', window.location.pathname);
-    } else if (params.get('paymentResult') === 'cancel') {
+      setPayResult('success');
+      setScreen('result');
+      setTab('wash');
+      window.history.replaceState({}, '', '/');
+    } else if (paymentResult === 'cancel') {
+      localStorage.removeItem('ypure_pendingOrder');
       setPayResult('cancel');
       setScreen('result');
       setTab('wash');
@@ -2565,6 +2591,18 @@ export default function App() {
       });
       const data = await res.json();
       if (data.paymentUrl) {
+        // Save pending order to localStorage so we can restore after LINE Pay redirect
+        lsSet('ypure_pendingOrder', {
+          machineId: selectedMachine,
+          storeId: selectedStore?.id,
+          storeName: selectedStore?.name,
+          machineName,
+          modeName: selectedMode?.name || '烘乾延長',
+          mode: selectedMode?.id || 'dryextend',
+          amount: finalPrice,
+          minutes,
+          orderId: data.orderId,
+        });
         window.location.href = data.paymentUrl;
       } else {
         // Backend didn't return payment URL - process as demo payment
@@ -2685,22 +2723,25 @@ export default function App() {
     });
   };
 
+  const [topupGroupId, setTopupGroupId] = useState(null);
   const handleTopup = () => {
     setSelectedTopup(null);
+    setTopupGroupId(currentGroupId || (storeGroups.length > 0 ? storeGroups[0].id : null));
     setShowTopupModal(true);
   };
 
   const doTopup = async (amount) => {
-    if (currentGroupId && user?.userId) {
+    const gid = topupGroupId || currentGroupId;
+    if (gid && user?.userId) {
       try {
         const res = await fetch(`${API}/api/wallet/topup`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: user.userId, groupId: currentGroupId, amount }),
+          body: JSON.stringify({ userId: user.userId, groupId: gid, amount }),
         });
         const data = await res.json();
         if (data.success) {
-          setGroupWallets(prev => ({ ...prev, [currentGroupId]: data.balance }));
+          setGroupWallets(prev => ({ ...prev, [gid]: data.balance }));
         }
       } catch (e) { console.error('Topup error:', e); }
     }
@@ -4545,6 +4586,25 @@ export default function App() {
             </div>
           </div>
           <div className="topup-fullpage-body">
+            {/* Group selector when in "全部" mode */}
+            {!currentGroupId && storeGroups.length > 1 && (
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 8, color: 'var(--text-hint)' }}>選擇儲值門市</div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {storeGroups.map(g => (
+                    <button key={g.id} onClick={() => setTopupGroupId(g.id)}
+                      style={{
+                        padding: '10px 18px', borderRadius: 12, border: 'none', cursor: 'pointer',
+                        background: topupGroupId === g.id ? 'var(--accent)' : 'var(--card)',
+                        color: topupGroupId === g.id ? '#000' : '#fff',
+                        fontSize: 14, fontWeight: 600, fontFamily: 'inherit',
+                      }}>
+                      {g.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             {/* Input card */}
             <div className="topup-input-card">
               <div className="topup-input-title">儲值點數</div>
