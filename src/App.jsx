@@ -1785,6 +1785,24 @@ function StoreWasherIcon({ size = 48 }) {
     </svg>
   );
 }
+function VendingIcon({ size = 36 }) {
+  const s = size;
+  return (
+    <svg width={s} height={s} viewBox="0 0 48 48" fill="none">
+      <rect x="6" y="2" width="36" height="44" rx="4" stroke="#333" strokeWidth="2.5" fill="#FFF" />
+      <line x1="6" y1="12" x2="42" y2="12" stroke="#333" strokeWidth="1.5" />
+      <rect x="12" y="16" width="10" height="8" rx="2" stroke="#333" strokeWidth="1.5" fill="none" />
+      <rect x="26" y="16" width="10" height="8" rx="2" stroke="#333" strokeWidth="1.5" fill="none" />
+      <rect x="12" y="28" width="10" height="8" rx="2" stroke="#333" strokeWidth="1.5" fill="none" />
+      <rect x="26" y="28" width="10" height="8" rx="2" stroke="#333" strokeWidth="1.5" fill="none" />
+      <circle cx="14" cy="7" r="2" fill="#333" />
+      <circle cx="20" cy="7" r="2" fill="#333" />
+      <line x1="28" y1="5" x2="36" y2="5" stroke="#333" strokeWidth="2" />
+      <line x1="28" y1="9" x2="36" y2="9" stroke="#333" strokeWidth="2" />
+      <rect x="14" y="40" width="20" height="4" rx="1" stroke="#333" strokeWidth="1.5" fill="none" />
+    </svg>
+  );
+}
 function DryerIcon({ size = 36 }) {
   const s = size;
   return (
@@ -2820,26 +2838,55 @@ export default function App() {
                     onClick={() => setShowMachineModal(true)}>
                     <div style={{ fontSize: 16, fontWeight: 600, color: '#1A1A1A' }}>機器選擇</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <WasherIcon running={false} />
-                      <span style={{ fontSize: 15, fontWeight: 600, color: '#333' }}>洗脫烘{selectedMachine.split('-m')[1]}號(大型)</span>
+                      {selectedMachine.includes('-v') ? <VendingIcon size={28} /> : selectedMachine.includes('-d') ? <DryerIcon size={28} /> : <WasherIcon running={false} size={28} />}
+                      <span style={{ fontSize: 15, fontWeight: 600, color: '#333' }}>
+                        {selectedMachine.includes('-v') ? '販賣機' : selectedMachine.includes('-d') ? `烘乾${String(parseInt(selectedMachine.split('-d')[1]) + (selectedStore?.machines || 6)).padStart(2,'0')}號` : `洗脫烘${selectedMachine.split('-m')[1]}號(大型)`}
+                      </span>
                       <span style={{ color: '#AAA' }}>▼</span>
                     </div>
                   </div>
 
-                  {/* Wash modes grid */}
-                  <div className="mode-grid">
-                    {MODES.map(mode => (
-                      <div key={mode.id}
-                        className={`mode-cell ${selectedMode?.id === mode.id ? 'selected' : ''}`}
-                        onClick={() => { setSelectedMode(mode); setSelectedCoupon(null); }}>
-                        <ModeIcon mode={mode.id} size={28} />
-                        <div className="mode-cell-name">{mode.name}</div>
+                  {/* Vending machine form */}
+                  {selectedMachine.includes('-v') && (
+                    <>
+                      <div style={{ background: '#FFF', borderRadius: 14, padding: '16px 20px', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ fontSize: 16, fontWeight: 600, color: '#1A1A1A' }}>投入金額</div>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          {[10, 30].map(amt => (
+                            <button key={amt} onClick={() => setSelectedMode({ id: `vend${amt}`, name: `販賣機$${amt}`, price: amt, minutes: 0 })}
+                              style={{ padding: '8px 20px', borderRadius: 8, border: 'none', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+                                background: selectedMode?.id === `vend${amt}` ? '#1A1A1A' : '#F0F0F0',
+                                color: selectedMode?.id === `vend${amt}` ? '#FFF' : '#333' }}>
+                              $ {amt}
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                    ))}
-                  </div>
+                      <div className="coupon-select-row">
+                        <div className="coupon-select-label">使用優惠</div>
+                        <div className="coupon-select-value">
+                          <span style={{ color: 'var(--text-hint)' }}>無可用優惠券 ▼</span>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Wash modes grid */}
+                  {!selectedMachine.includes('-v') && (
+                    <div className="mode-grid">
+                      {MODES.map(mode => (
+                        <div key={mode.id}
+                          className={`mode-cell ${selectedMode?.id === mode.id ? 'selected' : ''}`}
+                          onClick={() => { setSelectedMode(mode); setSelectedCoupon(null); }}>
+                          <ModeIcon mode={mode.id} size={28} />
+                          <div className="mode-cell-name">{mode.name}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Detergent options */}
-                  {selectedMode && selectedMode.id !== 'dryonly' && (
+                  {!selectedMachine.includes('-v') && selectedMode && selectedMode.id !== 'dryonly' && (
                     <div className="addon-row" style={{ marginTop: 10 }}>
                       {[
                         { key: 'detergent', label: '洗衣精' },
@@ -2856,7 +2903,7 @@ export default function App() {
                   )}
 
                   {/* Dryer extend */}
-                  {selectedMode && selectedMode.id !== 'washonly' && (
+                  {!selectedMachine.includes('-v') && selectedMode && selectedMode.id !== 'washonly' && (
                     <div className="extend-row">
                       <div className="extend-label">烘乾延長</div>
                       <select className="extend-select" value={dryExtend} onChange={e => setDryExtend(Number(e.target.value))}>
@@ -2870,7 +2917,7 @@ export default function App() {
                   )}
 
                   {/* Temperature */}
-                  {selectedMode && selectedMode.id !== 'washonly' && (
+                  {!selectedMachine.includes('-v') && selectedMode && selectedMode.id !== 'washonly' && (
                     <div className="temp-row">
                       <div className="temp-label">烘衣溫度</div>
                       {['low', 'mid', 'high'].map(t => (
@@ -2883,17 +2930,19 @@ export default function App() {
                   )}
 
                   {/* Coupon select */}
-                  {selectedMode && (
-                    <div className="coupon-select-row" onClick={() => { setCouponTab('coupon'); setShowCouponModal(true); }}>
+                  {!selectedMachine.includes('-v') && selectedMode && (
+                    <div className="coupon-select-row" onClick={() => { if (payMethod !== 'wallet' && !dryExtend) { setCouponTab('coupon'); setShowCouponModal(true); } }}>
                       <div className="coupon-select-label">使用優惠</div>
                       <div className="coupon-select-value">
-                        {selectedCoupon
-                          ? `${selectedCoupon.name} (-$${selectedCoupon.type === 'fixed' ? selectedCoupon.discount : Math.round(selectedMode.price * selectedCoupon.discount / 100)})`
-                          : dryExtend > 0
-                            ? <span style={{ color: '#E57373', fontSize: 13, background: 'rgba(229,115,115,0.12)', padding: '4px 10px', borderRadius: 6 }}>延長使用無法使用優惠</span>
-                            : getApplicableCoupons().length > 0
-                              ? <span style={{ color: 'var(--text-hint)' }}>請選擇優惠券 ▼</span>
-                              : <span style={{ color: 'var(--text-hint)' }}>暫無可用優惠</span>
+                        {payMethod === 'wallet'
+                          ? <span style={{ color: '#E57373', fontSize: 13, background: 'rgba(229,115,115,0.12)', padding: '4px 10px', borderRadius: 6 }}>單次付款無法使用優惠</span>
+                          : selectedCoupon
+                            ? `${selectedCoupon.name} (-$${selectedCoupon.type === 'fixed' ? selectedCoupon.discount : Math.round(selectedMode.price * selectedCoupon.discount / 100)})`
+                            : dryExtend > 0
+                              ? <span style={{ color: '#E57373', fontSize: 13, background: 'rgba(229,115,115,0.12)', padding: '4px 10px', borderRadius: 6 }}>延長使用無法使用優惠</span>
+                              : getApplicableCoupons().length > 0
+                                ? <span style={{ color: 'var(--text-hint)' }}>請選擇優惠券 ▼</span>
+                                : <span style={{ color: 'var(--text-hint)' }}>暫無可用優惠</span>
                         }
                       </div>
                     </div>
@@ -4006,7 +4055,7 @@ export default function App() {
               <button onClick={() => setShowMachineModal(false)} style={{ background: 'none', border: 'none', fontSize: 24, color: 'var(--text-sub)', cursor: 'pointer' }}>✕</button>
             </div>
             <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(255,255,255,0.08)', marginBottom: 14 }}>
-              {[{ key: 'washer', label: '洗脫烘一體機' }, { key: 'dryer', label: '烘乾機' }].map(t => (
+              {[{ key: 'washer', label: '洗脫烘一體機' }, { key: 'dryer', label: '烘乾機' }, { key: 'vending', label: '販賣機' }].map(t => (
                 <button key={t.key} onClick={() => setMachineModalTab(t.key)}
                   style={{ flex: 1, padding: '12px 0', background: 'none', border: 'none', borderBottom: machineModalTab === t.key ? '2px solid #4A90D9' : '2px solid transparent', color: machineModalTab === t.key ? '#FFF' : 'rgba(255,255,255,0.4)', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
                   {t.label}
@@ -4042,6 +4091,16 @@ export default function App() {
                 </div>
               );
             })}
+            {machineModalTab === 'vending' && (
+              <div onClick={() => { setSelectedMachine(`${selectedStore.id}-v1`); setShowMachineModal(false); setScreen('modes'); }}
+                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 4px', cursor: 'pointer' }}>
+                <VendingIcon size={32} />
+                <span style={{ flex: 1, fontSize: 15, fontWeight: 600 }}>販賣機</span>
+                <div style={{ width: 22, height: 22, borderRadius: '50%', border: '2px solid #C8A84E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#C8A84E' }} />
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
