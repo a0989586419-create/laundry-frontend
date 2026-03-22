@@ -3476,7 +3476,7 @@ export default function App() {
                 <div className="confirm-dialog-icon">
                   <svg width="80" height="80" viewBox="0 0 80 80" fill="none"><path d="M40 15L10 65h60L40 15z" stroke="#F5A623" strokeWidth="3" fill="none"/><path d="M40 35v15M40 55h.01" stroke="#F5A623" strokeWidth="3" strokeLinecap="round"/><path d="M25 20l-4-4M55 20l4-4M20 40l-5-2M60 40l5-2" stroke="#888" strokeWidth="2" strokeLinecap="round"/></svg>
                 </div>
-                <div className="confirm-dialog-text">您的余額不足</div>
+                <div className="confirm-dialog-text">您的餘額不足</div>
                 <div className="confirm-dialog-actions">
                   <button className="confirm-dialog-btn primary" style={{ flex: 1 }} onClick={() => {
                     setShowPurchaseConfirm(false);
