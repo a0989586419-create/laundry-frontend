@@ -61,18 +61,21 @@ const STORE_COUPONS = {
       usage: '於會員系統中使用『店內付款』功能，選擇該優惠卷，系統將自動扣抵點數', purchaseLimit: '不限制購買次數' },
   ],
   monthly: [
-    { id: 'sc4', name: '夜猫計畫(半年)', discount: '37%OFF', price: 3800, originalPrice: 6000, type: '包月卷',
-      desc: '消費點數全額扣抵', timeSlot: '22:00-06:00', device: '限一體機(M/L)使用，共可用24次',
+    { id: 'sc4', name: '夜猫計畫 (半年)', discount: '37%OFF', price: 3800, originalPrice: 6000, type: '折扣券',
+      desc: '該卷將全額抵扣應付點數', timeSlot: '僅在01:00 - 07:00時段可用', device: '限一體機(M/L)使用，共可用24次',
       validity: '自購買起183日內有效', stores: '雲管家洗衣【全台直營門市】',
-      usage: '於會員系統中使用『店內付款』功能，選擇該優惠卷，系統將自動扣抵點數', purchaseLimit: '不限制購買次數' },
-    { id: 'sc5', name: '夜猫計畫(一年)', discount: '74%OFF', price: 5500, originalPrice: 21000, type: '包月卷',
-      desc: '消費點數全額扣抵', timeSlot: '22:00-06:00', device: '限一體機(M/L)使用，共可用84次',
+      usage: '於會員系統中使用『店內付款』功能，選擇該優惠卷，系統將自動扣抵點數', purchaseLimit: '不限制購買次數',
+      canCombine: '不可與其他優惠活動併用' },
+    { id: 'sc5', name: '夜猫計畫 (一年)', discount: '74%OFF', price: 5500, originalPrice: 21000, type: '折扣券',
+      desc: '該卷將全額抵扣應付點數', timeSlot: '僅在01:00 - 07:00時段可用', device: '限一體機(M/L)使用，共可用84次',
       validity: '自購買起365日內有效', stores: '雲管家洗衣【全台直營門市】',
-      usage: '於會員系統中使用『店內付款』功能，選擇該優惠卷，系統將自動扣抵點數', purchaseLimit: '不限制購買次數' },
-    { id: 'sc6', name: '夜猫計畫(單月)', discount: '45%OFF', price: 580, originalPrice: 1050, type: '包月卷',
-      desc: '消費點數全額扣抵', timeSlot: '22:00-06:00', device: '限一體機(M)使用，共可用5次',
+      usage: '於會員系統中使用『店內付款』功能，選擇該優惠卷，系統將自動扣抵點數', purchaseLimit: '不限制購買次數',
+      canCombine: '不可與其他優惠活動併用' },
+    { id: 'sc6', name: '夜猫計畫 (單月)', discount: '45%OFF', price: 580, originalPrice: 1050, type: '折扣券',
+      desc: '該卷將全額抵扣應付點數', timeSlot: '僅在01:00 - 07:00時段可用', device: '限一體機(M)使用，共可用5次',
       validity: '自購買起31日內有效', stores: '雲管家洗衣【全台直營門市】',
-      usage: '於會員系統中使用『店內付款』功能，選擇該優惠卷，系統將自動扣抵點數', purchaseLimit: '不限制購買次數' },
+      usage: '於會員系統中使用『店內付款』功能，選擇該優惠卷，系統將自動扣抵點數', purchaseLimit: '不限制購買次數',
+      canCombine: '不可與其他優惠活動併用' },
   ],
   festival: [],
 };
@@ -3414,6 +3417,12 @@ export default function App() {
                 <span className="cpay-detail-label">每人限購：</span>
                 <span className="cpay-detail-value">{selectedStoreCoupon.purchaseLimit}</span>
               </div>
+              {selectedStoreCoupon.canCombine && (
+                <div className="cpay-detail-row">
+                  <span className="cpay-detail-label">可否併用：</span>
+                  <span className="cpay-detail-value">{selectedStoreCoupon.canCombine}</span>
+                </div>
+              )}
             </div>
 
             {/* Warning section */}
