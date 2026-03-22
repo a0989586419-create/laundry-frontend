@@ -4087,11 +4087,11 @@ export default function App() {
 
       {/* Phone Modal */}
       {showPhoneModal && storeDetailTarget && (
-        <div className="modal-overlay" onClick={() => setShowPhoneModal(false)}>
-          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ textAlign: 'center' }}>
+        <div onClick={() => setShowPhoneModal(false)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: 16, padding: '28px 24px', textAlign: 'center', maxWidth: 320, width: '85%', margin: '0 auto' }}>
             <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>聯絡電話</div>
-            <div style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>{storeDetailTarget.phone}</div>
-            <div style={{ fontSize: 13, color: '#888', marginBottom: 20 }}>{storeDetailTarget.name}</div>
+            <div style={{ fontSize: 28, fontWeight: 700, marginBottom: 8, color: '#000' }}>{storeDetailTarget.phone}</div>
+            <div style={{ fontSize: 13, color: '#888', marginBottom: 24 }}>{storeDetailTarget.name}</div>
             <div style={{ display: 'flex', gap: 12 }}>
               <button onClick={() => setShowPhoneModal(false)} style={{ flex: 1, padding: '12px', borderRadius: 12, border: '1px solid #ddd', background: '#fff', fontSize: 15, cursor: 'pointer' }}>關閉</button>
               <button onClick={() => { window.open(`tel:${storeDetailTarget.phone}`); setShowPhoneModal(false); }} style={{ flex: 1, padding: '12px', borderRadius: 12, border: 'none', background: '#000', color: '#fff', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}>撥打電話</button>
