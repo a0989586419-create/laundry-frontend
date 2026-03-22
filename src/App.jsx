@@ -1181,6 +1181,149 @@ body {
   font-size: 18px; font-weight: 900; color: var(--running);
   font-variant-numeric: tabular-nums;
 }
+
+/* Settings Page */
+.settings-overlay {
+  position: fixed; inset: 0; z-index: 700;
+  background: #000; overflow-y: auto;
+  animation: fadeIn 0.2s ease;
+  padding-bottom: env(safe-area-inset-bottom, 20px);
+}
+.settings-header {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 20px;
+  padding-top: calc(env(safe-area-inset-top, 12px) + 16px);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.settings-back {
+  background: none; border: none; cursor: pointer;
+  color: #FFF; font-size: 22px; padding: 4px;
+}
+.settings-brand {
+  font-size: 20px; font-weight: 700; color: #FFF;
+  letter-spacing: 1px;
+}
+.settings-content {
+  max-width: 520px; margin: 0 auto; padding: 20px;
+}
+.settings-card {
+  background: #2A2A2A; border-radius: 16px;
+  overflow: hidden; margin-bottom: 16px;
+}
+.settings-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.settings-row:last-child { border-bottom: none; }
+.settings-row-left {
+  display: flex; align-items: center; gap: 12px;
+}
+.settings-row-icon {
+  width: 28px; height: 28px; display: flex;
+  align-items: center; justify-content: center;
+  opacity: 0.7;
+}
+.settings-row-label {
+  font-size: 17px; font-weight: 600; color: rgba(255,255,255,0.85);
+}
+.settings-row-value {
+  font-size: 15px; color: rgba(255,255,255,0.5);
+  font-weight: 500;
+}
+.settings-row-arrow {
+  font-size: 18px; color: rgba(255,255,255,0.3);
+}
+.toggle-switch {
+  width: 52px; height: 30px; border-radius: 15px;
+  background: #3A3A3A; position: relative;
+  cursor: pointer; transition: background 0.3s;
+  flex-shrink: 0;
+}
+.toggle-switch.on { background: var(--accent); }
+.toggle-switch::after {
+  content: ''; position: absolute;
+  width: 26px; height: 26px; border-radius: 50%;
+  background: #FFF; top: 2px; left: 2px;
+  transition: transform 0.3s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.toggle-switch.on::after { transform: translateX(22px); }
+
+/* Not Available Modal */
+.not-available-overlay {
+  position: fixed; inset: 0; z-index: 800;
+  background: rgba(0,0,0,0.6);
+  display: flex; align-items: center; justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+.not-available-box {
+  background: #FFF; width: 85%; max-width: 340px;
+  border-radius: 24px; padding: 40px 28px 28px;
+  text-align: center; animation: scaleIn 0.3s ease;
+}
+.not-available-icon {
+  width: 80px; height: 80px; margin: 0 auto 20px;
+}
+.not-available-text {
+  font-size: 20px; font-weight: 700; color: #333;
+  margin-bottom: 24px;
+}
+.not-available-btn {
+  width: 100%; padding: 16px; border-radius: 14px;
+  border: none; background: #000; color: #FFF;
+  font-size: 18px; font-weight: 700; cursor: pointer;
+  font-family: inherit;
+}
+.not-available-btn:active { opacity: 0.8; }
+
+/* NIKKO Header Icons */
+.header-actions {
+  display: flex; align-items: center; gap: 12px;
+  margin-left: auto;
+}
+.header-icon-btn {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.15s;
+}
+.header-icon-btn:active { transform: scale(0.9); background: rgba(255,255,255,0.15); }
+
+/* NIKKO Greeting */
+.nikko-greeting {
+  padding: 8px 0 4px;
+}
+.nikko-greeting h1 {
+  font-size: 32px; font-weight: 900; color: #FFF;
+  line-height: 1.2; margin-bottom: 4px;
+}
+.nikko-greeting p {
+  font-size: 17px; color: rgba(255,255,255,0.5);
+  font-weight: 500;
+}
+
+/* Wallet card bottom links */
+.wallet-bottom-links {
+  display: flex; margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(0,0,0,0.1);
+}
+.wallet-bottom-link {
+  flex: 1; display: flex; align-items: center;
+  justify-content: center; gap: 8px;
+  background: none; border: none; cursor: pointer;
+  font-family: inherit; font-size: 15px; font-weight: 700;
+  color: rgba(0,0,0,0.7); padding: 4px 0;
+}
+.wallet-bottom-link:first-child {
+  border-right: 1px solid rgba(0,0,0,0.12);
+}
+.wallet-bottom-link:active { opacity: 0.6; }
+.wallet-link-arrow {
+  font-size: 14px; letter-spacing: -2px;
+}
 `;
 
 // ──── Helper: Format seconds to MM:SS ────
@@ -1388,6 +1531,10 @@ export default function App() {
   const [expandedNews, setExpandedNews] = useState(null);
   const [historyFilter, setHistoryFilter] = useState('all');
   const [addons, setAddons] = useState({ detergent: true, softener: true, degreaser: false, antibacterial: false });
+  const [showSettings, setShowSettings] = useState(false);
+  const [notifCoupon, setNotifCoupon] = useState(false);
+  const [notifLaundry, setNotifLaundry] = useState(false);
+  const [showNotAvailable, setShowNotAvailable] = useState(false);
   const [dryExtend, setDryExtend] = useState(0);
   const [usageHistory, setUsageHistory] = useState([
     { id: 'h1', date: '2026-03-20 14:30', store: '悠洗自助洗衣', machine: '洗脫烘2號', mode: '洗脫烘-標準', amount: 160, status: 'completed' },
@@ -1781,20 +1928,27 @@ export default function App() {
           <div className="dark-header-inner">
             <div className="dark-header-top">
               <div className="dark-header-logo-wrap">
-                <img src="/ypure-logo.png" alt="YPURE" className="dark-header-logo" />
+                <img src="/ypure-logo.png" alt="YPURE" className="dark-header-logo" onError={e => { e.target.style.display = 'none'; }} />
               </div>
               <div className="dark-header-brand">雲管家</div>
+              <div className="header-actions">
+                <button className="header-icon-btn" onClick={() => window.open('https://line.me/R/ti/p/@cloud-butler', '_blank')} title="LINE 官方帳號">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="#06C755">
+                    <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/>
+                  </svg>
+                </button>
+                <button className="header-icon-btn" onClick={() => setShowSettings(true)} title="設定">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFF" strokeWidth="2" strokeLinecap="round">
+                    <circle cx="12" cy="12" r="3" />
+                    <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+                  </svg>
+                </button>
+              </div>
             </div>
             {user && (
-              <div className="dark-header-user">
-                {user.picture ? (
-                  <img src={user.picture} className="dark-header-avatar" alt="" />
-                ) : (
-                  <div className="dark-header-avatar-text">{user.name?.[0] || '?'}</div>
-                )}
-                <div className="dark-header-welcome">
-                  歡迎，<strong>{user.name}</strong>！
-                </div>
+              <div className="nikko-greeting">
+                <h1>Hello，{user.name}！</h1>
+                <p>比乾淨多一點的，是專屬感。</p>
               </div>
             )}
           </div>
@@ -1809,11 +1963,31 @@ export default function App() {
             <>
               <div style={{ marginTop: 20 }}>
                 <div className="home-wallet">
-                  <div className="home-wallet-title">我的點數餘額</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                    <div className="home-wallet-title" style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 0 }}>
+                      點數餘額
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.4)" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                    </div>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.35)" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                  </div>
                   <div className="home-wallet-points">{points}<span>點</span></div>
-                  <div className="home-wallet-actions">
-                    <button className="home-wallet-btn topup" onClick={handleTopup}>$ 儲值</button>
-                    <button className="home-wallet-btn history" onClick={() => switchTab('history')}>交易記錄 →</button>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
+                    <button className="home-wallet-btn topup" onClick={handleTopup} style={{ flex: 'none', padding: '10px 24px', borderRadius: 20, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+                      儲值
+                    </button>
+                  </div>
+                  <div className="wallet-bottom-links">
+                    <button className="wallet-bottom-link" onClick={() => switchTab('history')}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.5)" strokeWidth="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2 2"/></svg>
+                      交易記錄
+                      <span className="wallet-link-arrow">···→</span>
+                    </button>
+                    <button className="wallet-bottom-link" onClick={() => switchTab('profile')}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.5)" strokeWidth="2"><path d="M5 12h30v4a4 4 0 010 8v4H5v-4a4 4 0 010-8V12z" transform="scale(0.6) translate(2,4)"/></svg>
+                      我的優惠
+                      <span className="wallet-link-arrow">···→</span>
+                    </button>
                   </div>
                 </div>
                 {points < 100 && (
@@ -2672,6 +2846,121 @@ export default function App() {
                 onKeyDown={e => e.key === 'Enter' && handleRedeemCode()} />
               <button className="redeem-btn" onClick={handleRedeemCode}>兌換</button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* ═══ Settings Page ═══ */}
+      {showSettings && (
+        <div className="settings-overlay">
+          <div className="settings-header">
+            <button className="settings-back" onClick={() => setShowSettings(false)}>←</button>
+            <div className="settings-brand">雲管家</div>
+          </div>
+          <div className="settings-content">
+            <div className="settings-card">
+              <div className="settings-row">
+                <div className="settings-row-left">
+                  <div className="settings-row-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#AAA" strokeWidth="2" strokeLinecap="round">
+                      <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                      <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                  </div>
+                  <div className="settings-row-label">用戶ID</div>
+                </div>
+                <div className="settings-row-value">{user?.userId || 'N/A'}</div>
+              </div>
+              <div className="settings-row" style={{ cursor: 'pointer' }} onClick={() => showToast('個人資料功能開發中')}>
+                <div className="settings-row-left">
+                  <div className="settings-row-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#AAA" strokeWidth="2" strokeLinecap="round">
+                      <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                      <circle cx="8.5" cy="7" r="4"/>
+                      <line x1="20" y1="8" x2="20" y2="14"/>
+                      <line x1="23" y1="11" x2="17" y2="11"/>
+                    </svg>
+                  </div>
+                  <div className="settings-row-label">個人資料</div>
+                </div>
+                <div className="settings-row-arrow">›</div>
+              </div>
+            </div>
+
+            <div className="settings-card">
+              <div className="settings-row">
+                <div className="settings-row-left">
+                  <div className="settings-row-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#AAA" strokeWidth="2" strokeLinecap="round">
+                      <path d="M5 12h14v4a4 4 0 01-4 4H9a4 4 0 01-4-4v-4z"/>
+                      <path d="M5 12V8a4 4 0 014-4h6a4 4 0 014 4v4"/>
+                      <line x1="12" y1="16" x2="12" y2="16"/>
+                    </svg>
+                  </div>
+                  <div className="settings-row-label">優惠券到期提示</div>
+                </div>
+                <div className={`toggle-switch ${notifCoupon ? 'on' : ''}`} onClick={() => setShowNotAvailable(true)} />
+              </div>
+              <div className="settings-row">
+                <div className="settings-row-left">
+                  <div className="settings-row-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#AAA" strokeWidth="2" strokeLinecap="round">
+                      <rect x="3" y="3" width="18" height="18" rx="3"/>
+                      <circle cx="12" cy="13" r="5"/>
+                      <path d="M12 8v5l3 2"/>
+                    </svg>
+                  </div>
+                  <div className="settings-row-label">衣物洗好提示</div>
+                </div>
+                <div className={`toggle-switch ${notifLaundry ? 'on' : ''}`} onClick={() => setShowNotAvailable(true)} />
+              </div>
+            </div>
+
+            <div className="settings-card">
+              <div className="settings-row" style={{ cursor: 'pointer' }} onClick={() => showToast('服務條款載入中...')}>
+                <div className="settings-row-left">
+                  <div className="settings-row-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#AAA" strokeWidth="2" strokeLinecap="round">
+                      <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+                    </svg>
+                  </div>
+                  <div className="settings-row-label">服務條款</div>
+                </div>
+                <div className="settings-row-arrow">›</div>
+              </div>
+              <div className="settings-row">
+                <div className="settings-row-left">
+                  <div className="settings-row-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#AAA" strokeWidth="2" strokeLinecap="round">
+                      <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+                      <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                  </div>
+                  <div className="settings-row-label">當前版本號</div>
+                </div>
+                <div className="settings-row-value">V2.0.0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ Not Available Modal ═══ */}
+      {showNotAvailable && (
+        <div className="not-available-overlay" onClick={() => setShowNotAvailable(false)}>
+          <div className="not-available-box" onClick={e => e.stopPropagation()}>
+            <div className="not-available-icon">
+              <svg width="80" height="80" viewBox="0 0 100 100" fill="none">
+                <rect x="20" y="35" width="60" height="45" rx="6" stroke="#CCC" strokeWidth="3" fill="#F5F5F5"/>
+                <path d="M35 35V25a15 15 0 0130 0v10" stroke="#CCC" strokeWidth="3" fill="none"/>
+                <line x1="35" y1="28" x2="30" y2="20" stroke="#DDD" strokeWidth="2"/>
+                <line x1="50" y1="25" x2="50" y2="15" stroke="#DDD" strokeWidth="2"/>
+                <line x1="65" y1="28" x2="70" y2="20" stroke="#DDD" strokeWidth="2"/>
+                <path d="M38 55h24" stroke="#DDD" strokeWidth="2.5" strokeLinecap="round"/>
+                <path d="M42 62h16" stroke="#DDD" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </div>
+            <div className="not-available-text">暫未開放</div>
+            <button className="not-available-btn" onClick={() => setShowNotAvailable(false)}>確定</button>
           </div>
         </div>
       )}
