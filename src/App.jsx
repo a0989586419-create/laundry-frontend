@@ -2413,7 +2413,9 @@ export default function App() {
         groupName: g.name,
         groupType: g.type,
       })))
-    : STORES.map(s => ({ ...s, groupId: 'sg1', groupName: '雲管家', groupType: 'independent' }));
+    : (userRole === 'super_admin' || userRole === 'store_admin')
+      ? STORES.map(s => ({ ...s, groupId: 'sg1', groupName: '雲管家', groupType: 'independent' }))
+      : []; // Consumer with no groups - show nothing
 
   // Current group's stores - consumers always see only their group
   const effectiveGroupId = currentGroupId || (storeGroups.length > 0 ? storeGroups[0].id : null);
@@ -2751,7 +2753,7 @@ export default function App() {
   };
 
   const doTopup = async (amount) => {
-    const gid = topupGroupId || currentGroupId;
+    const gid = topupGroupId || effectiveGroupId || currentGroupId;
     if (gid && user?.userId) {
       try {
         const res = await fetch(`${API}/api/wallet/topup`, {
@@ -3173,7 +3175,18 @@ export default function App() {
               ══════════════════════════════════════ */}
           {tab === 'wash' && (
             <>
-              {screen === 'stores' && (
+              {screen === 'stores' && currentStores.length === 0 && (
+                <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="1.5" style={{ marginBottom: 16 }}>
+                    <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+                  </svg>
+                  <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>尚未綁定門市</div>
+                  <div style={{ fontSize: 14, color: 'var(--text-hint)', lineHeight: 1.6 }}>
+                    請透過門市提供的專屬連結<br/>或掃描店內 QR Code 進入系統
+                  </div>
+                </div>
+              )}
+              {screen === 'stores' && currentStores.length > 0 && (
                 <>
                   <div className="sec-title">選擇店家</div>
                   <div className="store-dropdown">
