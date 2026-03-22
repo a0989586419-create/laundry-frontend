@@ -82,9 +82,18 @@ const STORE_COUPONS = {
 
 // ─── 預設最新消息 ───
 const NEWS_ITEMS = [
-  { id: 'n1', title: '🎉 開幕優惠！儲值500送50', date: '2026-03-20', content: '即日起儲值500元送50點，限時優惠中！' },
-  { id: 'n2', title: '🔧 熊愛洗3號機維修完成', date: '2026-03-18', content: '台中熊愛洗3號機已修復，歡迎使用。' },
-  { id: 'n3', title: '📢 新增悠洗自助洗衣店', date: '2026-03-15', content: '嘉義文雅街新店正式上線！' },
+  { id: 'n1', title: '我們一直都在', date: '2026-03-20', tag: '原創', author: '雲管家洗衣',
+    desc: '在生活節奏越來越快的都市中，自助洗衣已成為許多人生活中不可或缺的一環...',
+    content: '在生活節奏越來越快的都市中，自助洗衣已成為許多人生活中不可或缺的一環。雲管家深知，對顧客來說「乾淨」從來不只是衣服的狀態，更是整體洗衣體驗的基礎。\n\n為了提供最安心、舒適的自助洗衣空間，我們雲管家洗衣團隊每週都會到店巡檢，默默守護大家的洗衣時光。我們定期補充洗衣用品、清潔環境、維護設備、檢查濾網、確認洗衣機運作狀況，只為了讓每位來洗衣的你都能感受到一種被照顧的安心。\n\n我們相信，洗衣不是把衣服丟進機器就好，而是日常中一種「讓生活更有秩序」的儀式感。我們會繼續努力，成為你生活裡最可靠的洗衣夥伴。' },
+  { id: 'n2', title: '升級會員洗衣更輕鬆', date: '2026-03-18', tag: '系統',  author: '雲管家洗衣',
+    desc: '雲管家全面升級會員系統，打造更智慧、便利的洗衣體驗...',
+    content: '雲管家全面升級會員系統，打造更智慧、便利的洗衣體驗！新系統支援點數儲值、優惠券管理、機器狀態即時查詢等功能，讓你的洗衣生活更加輕鬆便利。\n\n透過LINE官方帳號即可快速註冊，享受專屬會員福利。' },
+  { id: 'n3', title: '專屬你的洗衣錢包', date: '2026-03-15', tag: '功能', author: '雲管家洗衣',
+    desc: '雲管家全新線上會員功能來囉！會員可透過LINE官方帳號管理點數...',
+    content: '雲管家全新線上會員功能來囉！會員可透過LINE官方帳號管理點數、查看交易紀錄、領取優惠券。\n\n首次加入會員即贈50元洗衣折扣券，立即加入享受專屬優惠！' },
+  { id: 'n4', title: '夜猫洗衣全年最划算', date: '2026-03-10', tag: '優惠', author: '雲管家洗衣',
+    desc: '你也是「夜猫洗衣族」嗎？深夜洗衣機台不用排隊，空間獨享...',
+    content: '你也是「夜猫洗衣族」嗎？深夜洗衣機台不用排隊，空間獨享更自在！\n\n夜猫計畫提供01:00-07:00時段專屬優惠，年卡方案每次洗衣只要65點，是一般價格的31折！立即購買夜猫計畫，享受最划算的深夜洗衣體驗。' },
 ];
 
 // ─── CSS Styles ───
@@ -1971,6 +1980,11 @@ export default function App() {
   const [notifCoupon, setNotifCoupon] = useState(false);
   const [notifLaundry, setNotifLaundry] = useState(false);
   const [showNotAvailable, setShowNotAvailable] = useState(false);
+  const [showNewsPage, setShowNewsPage] = useState(false);
+  const [selectedNews, setSelectedNews] = useState(null);
+  const [showStoreModal, setShowStoreModal] = useState(false);
+  const [showMachineModal, setShowMachineModal] = useState(false);
+  const [machineModalTab, setMachineModalTab] = useState('washer');
   const [pointsHidden, setPointsHidden] = useState(false);
   const [showPointsInfo, setShowPointsInfo] = useState(false);
   const [showTransactionPage, setShowTransactionPage] = useState(false);
@@ -2501,7 +2515,7 @@ export default function App() {
                   </div>
                   <IconMachine size={28} color="#888" />
                 </div>
-                <div className="home-grid-card home-grid-card-horizontal" onClick={() => switchTab('history')}>
+                <div className="home-grid-card home-grid-card-horizontal" onClick={() => setShowNewsPage(true)}>
                   <div>
                     <div className="home-grid-label">最新消息</div>
                     <div className="home-grid-sub">活動訊息不漏接</div>
@@ -2782,9 +2796,9 @@ export default function App() {
 
                   {/* Store card */}
                   <div style={{ background: '#FFF', borderRadius: 16, padding: '18px 20px', marginBottom: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
-                    onClick={() => { setScreen('stores'); }}>
+                    onClick={() => setShowStoreModal(true)}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                      <IconWasher size={40} color="#555" />
+                      <StoreWasherIcon size={44} />
                       <div>
                         <div style={{ fontSize: 17, fontWeight: 800, color: '#1A1A1A' }}>雲管家自助洗衣</div>
                         <div style={{ fontSize: 14, color: '#666', marginTop: 2 }}>{selectedStore?.name}</div>
@@ -2803,7 +2817,7 @@ export default function App() {
 
                   {/* Machine selector */}
                   <div style={{ background: '#FFF', borderRadius: 14, padding: '16px 20px', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
-                    onClick={goBack}>
+                    onClick={() => setShowMachineModal(true)}>
                     <div style={{ fontSize: 16, fontWeight: 600, color: '#1A1A1A' }}>機器選擇</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <WasherIcon running={false} />
@@ -3885,6 +3899,149 @@ export default function App() {
                 <div className="settings-row-value">V2.0.0</div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ News List Page ═══ */}
+      {showNewsPage && !selectedNews && (
+        <div className="fullpage-overlay">
+          <div className="fullpage-header">
+            <div className="fullpage-header-top">
+              <button className="fullpage-back" onClick={() => setShowNewsPage(false)}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFF" strokeWidth="2" strokeLinecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <div className="fullpage-title">最新消息</div>
+            </div>
+          </div>
+          <div className="fullpage-body">
+            {NEWS_ITEMS.map(news => (
+              <div key={news.id} onClick={() => setSelectedNews(news)}
+                style={{ display: 'flex', gap: 14, padding: '16px 0', borderBottom: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer' }}>
+                <div style={{ width: 110, height: 80, borderRadius: 10, background: 'linear-gradient(135deg, #2A2A2A, #1A1A1A)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 17, fontWeight: 700, color: '#FFF', marginBottom: 6, lineHeight: 1.3 }}>{news.title}</div>
+                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{news.desc}</div>
+                </div>
+                <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 18, alignSelf: 'center', flexShrink: 0 }}>›</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ═══ News Detail Page ═══ */}
+      {selectedNews && (
+        <div className="fullpage-overlay">
+          <div className="fullpage-header">
+            <div className="fullpage-header-top">
+              <button className="fullpage-back" onClick={() => setSelectedNews(null)}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFF" strokeWidth="2" strokeLinecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <div className="fullpage-title">最新消息</div>
+            </div>
+          </div>
+          <div className="fullpage-body">
+            <h2 style={{ fontSize: 22, fontWeight: 800, color: '#FFF', marginBottom: 8, lineHeight: 1.4 }}>{selectedNews.title}</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
+              {selectedNews.tag && <span style={{ background: 'rgba(255,255,255,0.1)', padding: '3px 10px', borderRadius: 6, fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>{selectedNews.tag}</span>}
+              <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>{selectedNews.author}</span>
+              <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)' }}>{selectedNews.date}發佈</span>
+            </div>
+            <div style={{ fontSize: 16, color: 'rgba(255,255,255,0.75)', lineHeight: 2, whiteSpace: 'pre-wrap' }}>
+              {selectedNews.content}
+            </div>
+            {/* Bottom social links */}
+            <div style={{ display: 'flex', gap: 10, marginTop: 40, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+              <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 20, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
+                <IconMachine size={16} color="#888" /> 機器狀態
+              </button>
+              <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 20, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
+                <IconStore size={16} color="#888" /> 雲管家門市
+              </button>
+              <button onClick={() => window.open('https://line.me/R/ti/p/@ypure', '_blank')}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 20, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#06C755"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755z"/></svg>
+                聯繫我們
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ Store Selection Modal ═══ */}
+      {showStoreModal && (
+        <div className="modal-overlay" onClick={() => setShowStoreModal(false)}>
+          <div className="modal-sheet" onClick={e => e.stopPropagation()} style={{ maxHeight: '70vh' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <div className="modal-title" style={{ margin: 0 }}>門市選擇</div>
+              <button onClick={() => setShowStoreModal(false)} style={{ background: 'none', border: 'none', fontSize: 24, color: 'var(--text-sub)', cursor: 'pointer' }}>✕</button>
+            </div>
+            <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 10, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+              <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 15 }}>請輸入門市</span>
+            </div>
+            {STORES.map(store => (
+              <div key={store.id}
+                onClick={() => { handleStoreSelect(store); setShowStoreModal(false); }}
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 4px', borderBottom: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer' }}>
+                <span style={{ fontSize: 16, fontWeight: 600, color: selectedStore?.id === store.id ? '#C8A84E' : '#FFF' }}>{store.name}</span>
+                <div style={{ width: 22, height: 22, borderRadius: '50%', border: selectedStore?.id === store.id ? '2px solid #C8A84E' : '2px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {selectedStore?.id === store.id && <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#C8A84E' }} />}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ═══ Machine Selection Modal ═══ */}
+      {showMachineModal && selectedStore && (
+        <div className="modal-overlay" onClick={() => setShowMachineModal(false)}>
+          <div className="modal-sheet" onClick={e => e.stopPropagation()} style={{ maxHeight: '75vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <div className="modal-title" style={{ margin: 0 }}>機器選擇</div>
+              <button onClick={() => setShowMachineModal(false)} style={{ background: 'none', border: 'none', fontSize: 24, color: 'var(--text-sub)', cursor: 'pointer' }}>✕</button>
+            </div>
+            <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(255,255,255,0.08)', marginBottom: 14 }}>
+              {[{ key: 'washer', label: '洗脫烘一體機' }, { key: 'dryer', label: '烘乾機' }].map(t => (
+                <button key={t.key} onClick={() => setMachineModalTab(t.key)}
+                  style={{ flex: 1, padding: '12px 0', background: 'none', border: 'none', borderBottom: machineModalTab === t.key ? '2px solid #4A90D9' : '2px solid transparent', color: machineModalTab === t.key ? '#FFF' : 'rgba(255,255,255,0.4)', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+                  {t.label}
+                </button>
+              ))}
+            </div>
+            {machineModalTab === 'washer' && Array.from({ length: selectedStore.machines }, (_, i) => {
+              const mid = `${selectedStore.id}-m${i + 1}`;
+              const state = getMachineState(mid);
+              const isRunning = state.status === 'running';
+              return (
+                <div key={mid} onClick={() => { if (!isRunning) { setSelectedMachine(mid); setShowMachineModal(false); setScreen('modes'); } }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 4px', borderBottom: '1px solid rgba(255,255,255,0.06)', cursor: isRunning ? 'default' : 'pointer', opacity: isRunning ? 0.5 : 1 }}>
+                  <WasherIcon size={32} running={isRunning} />
+                  <span style={{ flex: 1, fontSize: 15, fontWeight: 600 }}>洗脫烘{i + 1}號(大型){isRunning ? <span style={{ color: '#E57373', marginLeft: 8 }}>(使用中)</span> : ''}</span>
+                  <div style={{ width: 22, height: 22, borderRadius: '50%', border: selectedMachine === mid ? '2px solid #C8A84E' : '2px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {selectedMachine === mid && <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#C8A84E' }} />}
+                  </div>
+                </div>
+              );
+            })}
+            {machineModalTab === 'dryer' && Array.from({ length: selectedStore.dryers || 2 }, (_, i) => {
+              const did = `${selectedStore.id}-d${i + 1}`;
+              const dryerNum = selectedStore.machines + i + 1;
+              return (
+                <div key={did} onClick={() => { setSelectedMachine(did); setShowMachineModal(false); setScreen('modes'); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 4px', borderBottom: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer' }}>
+                  <DryerIcon size={32} />
+                  <span style={{ flex: 1, fontSize: 15, fontWeight: 600 }}>烘乾{String(dryerNum).padStart(2,'0')}號({i === 0 ? '上' : '下'})</span>
+                  <div style={{ width: 22, height: 22, borderRadius: '50%', border: selectedMachine === did ? '2px solid #C8A84E' : '2px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {selectedMachine === did && <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#C8A84E' }} />}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
