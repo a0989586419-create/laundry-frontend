@@ -2248,18 +2248,27 @@ export default function App() {
                 // Use entry group if specified, otherwise first group
                 setCurrentGroupId(entryGroupId || profileData.groups[0].id);
               }
-              // Clean URL params (keep clean)
-              if (entryGroupId) {
-                window.history.replaceState({}, '', window.location.pathname);
+              // Clean URL params (keep clean) but preserve group in localStorage
+              const currentUrl = new URL(window.location.href);
+              if (currentUrl.searchParams.has('group') || currentUrl.searchParams.has('status')) {
+                window.history.replaceState({}, '', '/');
               }
             } catch (e) { console.error('Profile fetch error:', e); }
           } else if (window.liff.isInClient()) {
-            // In LINE app but not logged in — trigger login
-            window.liff.login();
+            // In LINE app but not logged in — trigger login with group preserved
+            const savedGroup = localStorage.getItem('ypure_entryGroup');
+            const redirectUri = savedGroup
+              ? `https://laundry-frontend-chi.vercel.app?group=${savedGroup}`
+              : 'https://laundry-frontend-chi.vercel.app';
+            window.liff.login({ redirectUri });
             return;
           } else {
-            // External browser — redirect to LINE login
-            window.liff.login();
+            // External browser — redirect to LINE login with group preserved
+            const savedGroup = localStorage.getItem('ypure_entryGroup');
+            const redirectUri = savedGroup
+              ? `https://laundry-frontend-chi.vercel.app?group=${savedGroup}`
+              : 'https://laundry-frontend-chi.vercel.app';
+            window.liff.login({ redirectUri });
             return;
           }
         } else {
@@ -2270,7 +2279,12 @@ export default function App() {
         console.error('LIFF init error:', err);
         // On error, try login if liff is available, otherwise guest mode
         if (window.liff) {
-          try { window.liff.login(); return; } catch {}
+          try {
+            const savedGroup = localStorage.getItem('ypure_entryGroup');
+            const redirectUri = savedGroup ? `https://laundry-frontend-chi.vercel.app?group=${savedGroup}` : 'https://laundry-frontend-chi.vercel.app';
+            window.liff.login({ redirectUri });
+            return;
+          } catch {}
         }
         setUser({ name: '會員', picture: '', userId: `guest-${Date.now()}` });
       }
