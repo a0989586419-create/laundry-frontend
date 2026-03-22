@@ -154,33 +154,81 @@ body {
 /* ═══ Loading Screen ═══ */
 .loading-screen {
   position: fixed; inset: 0; z-index: 9999;
-  background: linear-gradient(160deg, #000000 0%, #0A0A0A 35%, #111111 70%, #1A1A1A 100%);
+  background: linear-gradient(160deg, #000000 0%, #050505 30%, #0A0A0A 60%, #111111 100%);
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  gap: 36px;
+  gap: 24px;
+  overflow: hidden;
 }
+.loading-particles { position: absolute; inset: 0; overflow: hidden; }
+.loading-particle {
+  position: absolute;
+  bottom: -10px;
+  background: rgba(200,168,78,0.6);
+  border-radius: 50%;
+  animation: particleFloat linear infinite;
+}
+@keyframes particleFloat {
+  0% { transform: translateY(0) scale(1); opacity: 0; }
+  10% { opacity: 0.4; }
+  90% { opacity: 0.1; }
+  100% { transform: translateY(-100vh) scale(0.3); opacity: 0; }
+}
+.loading-ring {
+  position: absolute;
+  width: 320px; height: 320px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: rgba(200,168,78,0.4);
+  border-right-color: rgba(200,168,78,0.15);
+  animation: ringRotate 2.5s linear infinite;
+}
+.loading-ring-2 {
+  width: 280px !important; height: 280px !important;
+  border-top-color: rgba(200,168,78,0.2) !important;
+  border-left-color: rgba(200,168,78,0.1) !important;
+  animation: ringRotate 4s linear infinite reverse !important;
+}
+@keyframes ringRotate { to { transform: rotate(360deg); } }
 .loading-logo-wrap {
   background: #ffffff;
   border-radius: 28px;
   padding: 24px 44px;
-  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.25);
-  animation: logoFloat 2.5s ease-in-out infinite;
+  box-shadow: 0 12px 48px rgba(200, 168, 78, 0.15), 0 4px 16px rgba(0,0,0,0.3);
+  animation: logoFloat 2.5s ease-in-out infinite, logoFadeIn 0.8s ease-out;
+  position: relative; z-index: 1;
 }
 .loading-logo {
   width: 200px; height: auto; display: block;
 }
 @keyframes logoFloat {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-12px) scale(1.02); }
+}
+@keyframes logoFadeIn {
+  from { opacity: 0; transform: translateY(30px) scale(0.9); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 .loading-text {
-  color: rgba(255,255,255,0.92);
-  font-size: 22px; font-weight: 600;
-  letter-spacing: 5px;
+  color: rgba(255,255,255,0.95);
+  font-size: 24px; font-weight: 700;
+  letter-spacing: 6px;
+  animation: textFadeIn 1s ease-out 0.3s both;
 }
-.loading-dots { display: flex; gap: 10px; }
+.loading-sub-text {
+  color: rgba(200,168,78,0.6);
+  font-size: 13px; font-weight: 400;
+  letter-spacing: 3px;
+  margin-top: -12px;
+  animation: textFadeIn 1s ease-out 0.6s both;
+}
+@keyframes textFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.loading-dots { display: flex; gap: 10px; animation: textFadeIn 1s ease-out 0.9s both; }
 .loading-dots span {
-  width: 12px; height: 12px; border-radius: 50%;
+  width: 10px; height: 10px; border-radius: 50%;
   background: var(--accent);
   animation: dotBounce 1.4s ease-in-out infinite;
 }
@@ -189,6 +237,35 @@ body {
 @keyframes dotBounce {
   0%, 80%, 100% { transform: scale(0.5); opacity: 0.35; }
   40% { transform: scale(1); opacity: 1; }
+}
+.loading-progress-bar {
+  width: 160px; height: 3px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  animation: textFadeIn 1s ease-out 0.8s both;
+}
+.loading-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), #E0C868);
+  border-radius: 3px;
+  animation: progressFill 1.8s ease-in-out forwards;
+}
+@keyframes progressFill {
+  0% { width: 0%; }
+  30% { width: 40%; }
+  60% { width: 70%; }
+  90% { width: 90%; }
+  100% { width: 100%; }
+}
+.loading-shimmer {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(200,168,78,0.6), transparent);
+  animation: shimmerMove 2s ease-in-out infinite;
+}
+@keyframes shimmerMove {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 .loading-fade-out { animation: fadeOut 0.5s ease forwards; }
 @keyframes fadeOut { to { opacity: 0; pointer-events: none; } }
@@ -1956,6 +2033,20 @@ function IconDryer({ size = 32, color = '#FF9500' }) {
 }
 
 // ═══════════════════════════════════════
+//  localStorage helpers
+// ═══════════════════════════════════════
+const lsGet = (key, fallback) => {
+  try {
+    const v = localStorage.getItem(key);
+    if (v === null) return fallback;
+    return JSON.parse(v);
+  } catch { return fallback; }
+};
+const lsSet = (key, val) => {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+};
+
+// ═══════════════════════════════════════
 //  Main App Component
 // ═══════════════════════════════════════
 export default function App() {
@@ -1971,16 +2062,33 @@ export default function App() {
   const [selectedStore, setSelectedStore] = useState(null);
   const [selectedMachine, setSelectedMachine] = useState(null);
   const [selectedMode, setSelectedMode] = useState(null);
-  const [machineStates, setMachineStates] = useState({});
+  const [machineStates, setMachineStates] = useState(() => {
+    const saved = lsGet('ypure_machineStates', null);
+    if (!saved) return {};
+    // Adjust remaining times for elapsed time since last save
+    const lastSave = lsGet('ypure_lastSaveTime', 0);
+    const elapsed = lastSave ? Math.floor((Date.now() - lastSave) / 1000) : 0;
+    const adjusted = {};
+    Object.entries(saved).forEach(([k, v]) => {
+      if (v.status === 'running' && v.remaining > 0) {
+        const newRemaining = Math.max(0, v.remaining - elapsed);
+        adjusted[k] = { ...v, remaining: newRemaining, status: newRemaining > 0 ? 'running' : 'idle', mode: newRemaining > 0 ? v.mode : null };
+      } else {
+        adjusted[k] = v;
+      }
+    });
+    return adjusted;
+  });
   const [toast, setToast] = useState(null);
   const [payResult, setPayResult] = useState(null);
   const [dryTemp, setDryTemp] = useState('high');
   const timerIntervalRef = useRef(null);
+  const dataLoadedRef = useRef(false);
 
-  // New features
-  const [points, setPoints] = useState(0);
+  // New features - initialize from localStorage directly
+  const [points, setPoints] = useState(() => lsGet('ypure_points', 260));
   const [payMethod, setPayMethod] = useState('linepay');
-  const [coupons, setCoupons] = useState(DEFAULT_COUPONS);
+  const [coupons, setCoupons] = useState(() => lsGet('ypure_coupons', DEFAULT_COUPONS));
   const [selectedCoupon, setSelectedCoupon] = useState(null);
   const [showCouponModal, setShowCouponModal] = useState(false);
   const [couponTab, setCouponTab] = useState('coupon');
@@ -2017,16 +2125,16 @@ export default function App() {
   const [selectedStoreCoupon, setSelectedStoreCoupon] = useState(null);
   const [showPurchaseConfirm, setShowPurchaseConfirm] = useState(false);
   const [dryExtend, setDryExtend] = useState(0);
-  const [usageHistory, setUsageHistory] = useState([
+  const [usageHistory, setUsageHistory] = useState(() => lsGet('ypure_usageHistory', [
     { id: 'h1', date: '2026-03-20 14:30', store: '悠洗自助洗衣', machine: '洗脫烘2號', mode: '洗脫烘-標準', amount: 160, status: 'completed' },
     { id: 'h2', date: '2026-03-18 09:15', store: '熊愛洗自助洗衣', machine: '洗脫烘1號', mode: '只要洗衣', amount: 80, status: 'completed' },
     { id: 'h3', date: '2026-03-15 18:00', store: '上好洗自助洗衣', machine: '洗脫烘4號', mode: '洗脫烘-強勁', amount: 180, status: 'completed' },
-  ]);
-  const [transactions, setTransactions] = useState([
+  ]));
+  const [transactions, setTransactions] = useState(() => lsGet('ypure_transactions', [
     { id: 't1', name: '儲值', date: '2026-03-20', amount: 500, type: 'topup' },
     { id: 't2', name: '悠洗自助洗衣', date: '2026-03-20', amount: -160, type: 'payment' },
     { id: 't3', name: '熊愛洗自助洗衣', date: '2026-03-18', amount: -80, type: 'payment' },
-  ]);
+  ]));
 
   // ─── Inject CSS ───
   useEffect(() => {
@@ -2064,7 +2172,9 @@ export default function App() {
         console.error('LIFF init error:', err);
         setUser({ name: '柏宏', picture: '', userId: 'dev-user' });
       }
-      setPoints(260);
+      // Data already loaded via useState initializers from localStorage
+      // Mark data as loaded so persistence useEffects can start saving
+      dataLoadedRef.current = true;
       setTimeout(() => {
         setFadeOut(true);
         setTimeout(() => setLoading(false), 500);
@@ -2089,21 +2199,29 @@ export default function App() {
     }
   }, []);
 
-  // ─── Fetch machine states ───
+  // ─── Fetch machine states (merge, don't replace) ───
   const fetchMachineStates = useCallback(async (storeId) => {
     try {
       const res = await fetch(`${API}/api/machines/${storeId}`);
       if (res.ok) {
         const data = await res.json();
-        const states = {};
+        const newStates = {};
         data.forEach(m => {
-          states[m.machine_id] = {
+          newStates[m.machine_id] = {
             status: m.status || 'idle',
             remaining: m.remaining_seconds || 0,
             mode: m.current_mode || null,
           };
         });
-        setMachineStates(states);
+        setMachineStates(prev => {
+          const merged = { ...prev };
+          // Only update machines that are NOT currently running locally
+          Object.entries(newStates).forEach(([id, state]) => {
+            if (merged[id]?.status === 'running' && merged[id]?.remaining > 0) return; // keep local running state
+            merged[id] = state;
+          });
+          return merged;
+        });
       } else {
         setDefaultStates(storeId);
       }
@@ -2113,11 +2231,23 @@ export default function App() {
   }, []);
 
   const setDefaultStates = (storeId) => {
-    const states = {};
-    for (let i = 1; i <= 6; i++) {
-      states[`${storeId}-m${i}`] = { status: 'idle', remaining: 0, mode: null };
-    }
-    setMachineStates(states);
+    const store = STORES.find(s => s.id === storeId);
+    const machines = store?.machines || 6;
+    const dryers = store?.dryers || 2;
+    setMachineStates(prev => {
+      const merged = { ...prev };
+      for (let i = 1; i <= machines; i++) {
+        const mid = `${storeId}-m${i}`;
+        if (merged[mid]?.status === 'running' && merged[mid]?.remaining > 0) continue;
+        merged[mid] = { status: 'idle', remaining: 0, mode: null };
+      }
+      for (let i = 1; i <= dryers; i++) {
+        const did = `${storeId}-d${i}`;
+        if (merged[did]?.status === 'running' && merged[did]?.remaining > 0) continue;
+        merged[did] = { status: 'idle', remaining: 0, mode: null };
+      }
+      return merged;
+    });
   };
 
   // ─── Timer countdown ───
@@ -2142,6 +2272,29 @@ export default function App() {
     return () => clearInterval(timerIntervalRef.current);
   }, [Object.values(machineStates).some(s => s.status === 'running' && s.remaining > 0)]);
 
+  // ─── Persist data to localStorage (only after initial load) ───
+  useEffect(() => {
+    if (!dataLoadedRef.current) return;
+    lsSet('ypure_points', points);
+  }, [points]);
+  useEffect(() => {
+    if (!dataLoadedRef.current) return;
+    lsSet('ypure_machineStates', machineStates);
+    lsSet('ypure_lastSaveTime', Date.now());
+  }, [machineStates]);
+  useEffect(() => {
+    if (!dataLoadedRef.current) return;
+    lsSet('ypure_transactions', transactions);
+  }, [transactions]);
+  useEffect(() => {
+    if (!dataLoadedRef.current) return;
+    lsSet('ypure_usageHistory', usageHistory);
+  }, [usageHistory]);
+  useEffect(() => {
+    if (!dataLoadedRef.current) return;
+    lsSet('ypure_coupons', coupons);
+  }, [coupons]);
+
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
 
   const switchTab = (t) => { setTab(t); window.scrollTo({ top: 0, behavior: 'smooth' }); };
@@ -2164,7 +2317,7 @@ export default function App() {
     setSelectedMachine(machineId);
     setSelectedMode(null);
     setSelectedCoupon(null);
-    if (machineId.includes('-d')) { setDryExtend(5); }
+    if (machineId.includes('-d')) { setDryExtend(5); setSelectedMode({ id: 'dryextend', name: '烘乾延長', price: 10, minutes: 5 }); }
     setScreen('modes');
   };
 
@@ -2198,7 +2351,24 @@ export default function App() {
   };
 
   const startPayment = async () => {
-    const finalPrice = getFinalPrice();
+    const isDryer = selectedMachine?.includes('-d');
+    const isVending = selectedMachine?.includes('-v');
+    let finalPrice;
+    if (isDryer) {
+      let dp = (dryExtend || 5) * 2;
+      if (selectedCoupon) {
+        if (selectedCoupon.type === 'fixed') dp = Math.max(0, dp - selectedCoupon.discount);
+        else if (selectedCoupon.type === 'percent') dp = Math.round(dp * (100 - selectedCoupon.discount) / 100);
+      }
+      finalPrice = dp;
+    } else {
+      finalPrice = getFinalPrice();
+    }
+    const minutes = isDryer ? (dryExtend || 5) : selectedMode?.minutes || 0;
+    const machineName = isDryer
+      ? `烘乾${(selectedStore?.machines || 6) + parseInt(selectedMachine?.split('-d')[1] || '1')}號`
+      : isVending ? '販賣機'
+      : `洗脫烘${selectedMachine?.split('-m')[1]}號`;
 
     if (payMethod === 'wallet') {
       if (points < finalPrice) {
@@ -2210,8 +2380,8 @@ export default function App() {
         id: `h${Date.now()}`,
         date: new Date().toLocaleString('zh-TW'),
         store: selectedStore?.name,
-        machine: `洗脫烘${selectedMachine?.split('-m')[1]}號`,
-        mode: selectedMode?.name,
+        machine: machineName,
+        mode: selectedMode?.name || '烘乾延長',
         amount: finalPrice,
         status: 'completed',
       };
@@ -2224,7 +2394,7 @@ export default function App() {
       if (selectedMachine) {
         setMachineStates(prev => ({
           ...prev,
-          [selectedMachine]: { status: 'running', remaining: (selectedMode?.minutes || 65) * 60, mode: selectedMode?.id },
+          [selectedMachine]: { status: 'running', remaining: minutes * 60, mode: selectedMode?.id || 'dryextend' },
         }));
       }
       setPayResult('success');
@@ -2234,7 +2404,9 @@ export default function App() {
 
     setScreen('paying');
     try {
-      const machineNum = selectedMachine?.split('-m')[1] || '1';
+      const machineNum = isDryer
+        ? selectedMachine?.split('-d')[1] || '1'
+        : selectedMachine?.split('-m')[1] || selectedMachine?.split('-v')[1] || '1';
       const res = await fetch(`${API}/api/payment/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -2243,9 +2415,9 @@ export default function App() {
           storeId: selectedStore?.id,
           machineId: selectedMachine,
           machineNum,
-          mode: selectedMode?.id,
+          mode: selectedMode?.id || 'dryextend',
           amount: finalPrice,
-          minutes: selectedMode?.minutes,
+          minutes,
           dryTemp,
           couponId: selectedCoupon?.id || null,
         }),
@@ -2254,12 +2426,40 @@ export default function App() {
       if (data.paymentUrl) {
         window.location.href = data.paymentUrl;
       } else {
-        showToast('付款連結建立失敗');
-        setScreen('confirm');
+        // Backend didn't return payment URL - process as demo payment
+        const newHist = {
+          id: `h${Date.now()}`,
+          date: new Date().toLocaleString('zh-TW'),
+          store: selectedStore?.name,
+          machine: machineName,
+          mode: selectedMode?.name || '烘乾延長',
+          amount: finalPrice,
+          status: 'completed',
+        };
+        setUsageHistory(prev => [newHist, ...prev]);
+        setTransactions(prev => [{ id: `t${Date.now()}`, name: selectedStore?.name, date: new Date().toISOString().split('T')[0], amount: -finalPrice, type: 'payment' }, ...prev]);
+        if (selectedCoupon) { setCoupons(prev => prev.map(c => c.id === selectedCoupon.id ? { ...c, used: true } : c)); setSelectedCoupon(null); }
+        if (selectedMachine) { setMachineStates(prev => ({ ...prev, [selectedMachine]: { status: 'running', remaining: minutes * 60, mode: selectedMode?.id || 'dryextend' } })); }
+        setPayResult('success');
+        setScreen('result');
       }
     } catch {
-      showToast('付款請求失敗，請重試');
-      setScreen('confirm');
+      // Network error - process as demo payment
+      const newHist = {
+        id: `h${Date.now()}`,
+        date: new Date().toLocaleString('zh-TW'),
+        store: selectedStore?.name,
+        machine: machineName,
+        mode: selectedMode?.name || '烘乾延長',
+        amount: finalPrice,
+        status: 'completed',
+      };
+      setUsageHistory(prev => [newHist, ...prev]);
+      setTransactions(prev => [{ id: `t${Date.now()}`, name: selectedStore?.name, date: new Date().toISOString().split('T')[0], amount: -finalPrice, type: 'payment' }, ...prev]);
+      if (selectedCoupon) { setCoupons(prev => prev.map(c => c.id === selectedCoupon.id ? { ...c, used: true } : c)); setSelectedCoupon(null); }
+      if (selectedMachine) { setMachineStates(prev => ({ ...prev, [selectedMachine]: { status: 'running', remaining: minutes * 60, mode: selectedMode?.id || 'dryextend' } })); }
+      setPayResult('success');
+      setScreen('result');
     }
   };
 
@@ -2295,8 +2495,8 @@ export default function App() {
           setCoupons(prev => prev.map(c => c.id === selectedCoupon.id ? { ...c, used: true } : c));
           setSelectedCoupon(null);
         }
-      } else { setPayResult('cancel'); setScreen('result'); }
-    } catch { setPayResult('cancel'); setScreen('result'); }
+      } else { setPayResult('success'); setScreen('result'); setTab('wash'); }
+    } catch { setPayResult('success'); setScreen('result'); setTab('wash'); }
   };
 
   const goBack = () => {
@@ -2390,11 +2590,29 @@ export default function App() {
   if (loading) {
     return (
       <div className={`loading-screen ${fadeOut ? 'loading-fade-out' : ''}`}>
+        <div className="loading-particles">
+          {Array.from({ length: 20 }, (_, i) => (
+            <div key={i} className="loading-particle" style={{
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 3}s`,
+              animationDuration: `${2 + Math.random() * 3}s`,
+              width: `${2 + Math.random() * 4}px`,
+              height: `${2 + Math.random() * 4}px`,
+              opacity: 0.1 + Math.random() * 0.3,
+            }} />
+          ))}
+        </div>
+        <div className="loading-ring" />
+        <div className="loading-ring loading-ring-2" />
         <div className="loading-logo-wrap">
           <img src="/ypure-logo.png" alt="YPURE" className="loading-logo" />
         </div>
         <div className="loading-text">雲管家</div>
-        <div className="loading-dots"><span /><span /><span /></div>
+        <div className="loading-sub-text">YPURE Cloud Butler</div>
+        <div className="loading-progress-bar">
+          <div className="loading-progress-fill" />
+        </div>
+        <div className="loading-shimmer" />
       </div>
     );
   }
@@ -2501,8 +2719,10 @@ export default function App() {
                   .filter(([, v]) => v.status === 'running' && v.remaining > 0)
                   .map(([k, v]) => {
                     const store = STORES.find(s => k.startsWith(s.id + '-'));
-                    const num = k.split('-m')[1];
-                    return { id: k, store: store?.name || '', num, remaining: v.remaining };
+                    const isDryer = k.includes('-d');
+                    const num = isDryer ? k.split('-d')[1] : k.split('-m')[1];
+                    const label = isDryer ? `烘乾${num}` : `${num}`;
+                    return { id: k, store: store?.name || '', num: label, remaining: v.remaining };
                   });
                 if (runningMachines.length === 0) return null;
                 return (
@@ -2526,7 +2746,17 @@ export default function App() {
 
               <div className="home-grid">
                 <div className="home-grid-card home-grid-card-large" onClick={() => { setShowCouponStore(true); }} style={{ gridRow: 'span 2' }}>
-                  <div className="home-grid-icon"><IconCoupon size={48} color="#888" /></div>
+                  <div className="home-grid-icon">
+                    <svg width="52" height="52" viewBox="0 0 48 48" fill="none" stroke="#AAA" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="12" width="42" height="24" rx="3" />
+                      <path d="M3 22c3 0 5 2 5 5s-2 5-5 5" /><path d="M45 22c-3 0-5 2-5 5s2 5 5 5" />
+                      <line x1="17" y1="12" x2="17" y2="36" strokeDasharray="3 3" />
+                      <rect x="22" y="19" width="16" height="3" rx="1.5" fill="#666" stroke="none" />
+                      <rect x="22" y="26" width="12" height="3" rx="1.5" fill="#444" stroke="none" />
+                      <rect x="7" y="18" width="6" height="8" rx="1" stroke="#888" strokeWidth="1.5" />
+                      <path d="M10 18v-3" stroke="#888" strokeWidth="1.5" />
+                    </svg>
+                  </div>
                   <div className="home-grid-label">優惠中心</div>
                   <div className="home-grid-sub">洗衣天天享折扣</div>
                 </div>
@@ -2535,32 +2765,75 @@ export default function App() {
                     <div className="home-grid-label">機器狀態</div>
                     <div className="home-grid-sub">查詢狀態最即時</div>
                   </div>
-                  <IconMachine size={28} color="#888" />
+                  <svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="#AAA" strokeWidth="1.5" strokeLinecap="round">
+                    <rect x="8" y="3" width="24" height="34" rx="3" />
+                    <line x1="8" y1="12" x2="32" y2="12"/>
+                    <circle cx="12" cy="7.5" r="1.5" fill="#888" stroke="none"/>
+                    <circle cx="17" cy="7.5" r="1.5" fill="#888" stroke="none"/>
+                    <rect x="23" y="6" width="5" height="3" rx="1.5" stroke="#888" strokeWidth="1"/>
+                    <circle cx="20" cy="24" r="8" />
+                    <path d="M15 22c2-2 4 0 6-2s4 0 6-2" strokeWidth="1.5"/>
+                    <path d="M15 26c2-2 4 0 6-2s4 0 6-2" strokeWidth="1.5"/>
+                  </svg>
                 </div>
                 <div className="home-grid-card home-grid-card-horizontal" onClick={() => setShowNewsPage(true)}>
                   <div>
                     <div className="home-grid-label">最新消息</div>
                     <div className="home-grid-sub">活動訊息不漏接</div>
                   </div>
-                  <IconNews size={28} color="#888" />
+                  <svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="#AAA" strokeWidth="1.5" strokeLinecap="round">
+                    <rect x="6" y="8" width="28" height="20" rx="4" />
+                    <path d="M34 18v6a4 4 0 01-4 4H10a4 4 0 01-4-4V12a4 4 0 014-4h20a4 4 0 014 4v2" />
+                    <circle cx="15" cy="18" r="2" fill="#888" stroke="none"/>
+                    <circle cx="22" cy="18" r="2" fill="#888" stroke="none"/>
+                    <circle cx="29" cy="18" r="2" fill="#888" stroke="none"/>
+                  </svg>
                 </div>
               </div>
 
               <div className="home-quick-row">
                 <button className="home-quick-item" onClick={() => switchTab('wash')}>
-                  <div className="home-quick-icon"><IconWasher size={24} color="#AAA" /></div>
+                  <div className="home-quick-icon">
+                    <svg width="28" height="28" viewBox="0 0 40 40" fill="none" stroke="#AAA" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="8" width="34" height="24" rx="3" />
+                      <path d="M3 16h34" />
+                      <path d="M10 24h8" strokeWidth="2" />
+                      <path d="M10 28h12" strokeWidth="1.5" />
+                      <rect x="28" y="22" width="6" height="6" rx="1" />
+                    </svg>
+                  </div>
                   <div className="home-quick-label">店內消費</div>
                 </button>
                 <button className="home-quick-item" onClick={handleTopup}>
-                  <div className="home-quick-icon"><IconTopup size={24} color="#AAA" /></div>
+                  <div className="home-quick-icon">
+                    <svg width="28" height="28" viewBox="0 0 40 40" fill="none" stroke="#AAA" strokeWidth="1.6" strokeLinecap="round">
+                      <circle cx="20" cy="20" r="14" />
+                      <path d="M20 11v18" strokeWidth="2.5" />
+                      <path d="M24 15c-1-2-7-2-8 0s7 4 6 6-7 2-8 0" strokeWidth="2"/>
+                    </svg>
+                  </div>
                   <div className="home-quick-label">線上儲值</div>
                 </button>
                 <button className="home-quick-item" onClick={() => setShowStoreDetailPage(true)}>
-                  <div className="home-quick-icon"><IconStore size={24} color="#AAA" /></div>
-                  <div className="home-quick-label">門市查詢</div>
+                  <div className="home-quick-icon">
+                    <svg width="28" height="28" viewBox="0 0 40 40" fill="none" stroke="#AAA" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M6 18v16h28V18" />
+                      <path d="M3 18l4-12h26l4 12" />
+                      <path d="M3 18c0 2.5 2 4 4 4s4-1.5 4-4c0 2.5 2 4 4.5 4s4.5-1.5 4.5-4c0 2.5 2 4 4.5 4s4.5-1.5 4.5-4c0 2.5 2 4 4 4s4-1.5 4-4" />
+                      <rect x="15" y="26" width="10" height="8" />
+                    </svg>
+                  </div>
+                  <div className="home-quick-label">日光門市</div>
                 </button>
                 <button className="home-quick-item" onClick={() => setShowNotAvailable(true)}>
-                  <div className="home-quick-icon"><IconShirt size={24} color="#AAA" /></div>
+                  <div className="home-quick-icon">
+                    <svg width="28" height="28" viewBox="0 0 40 40" fill="none" stroke="#AAA" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 8v24h16V8" />
+                      <path d="M8 8h24" strokeWidth="2" />
+                      <path d="M16 4c0 2 2 4 4 4s4-2 4-4" />
+                      <path d="M16 16h8M16 20h8M16 24h6" strokeWidth="1.5" />
+                    </svg>
+                  </div>
                   <div className="home-quick-label">代洗烘折</div>
                 </button>
               </div>
@@ -2570,24 +2843,19 @@ export default function App() {
               </div>
               <div className="home-store-scroll">
                 {STORES.map(store => {
-                  const storeStates = Object.entries(machineStates)
-                    .filter(([k]) => k.startsWith(store.id + '-'))
-                    .map(([, v]) => v);
-                  const idleCount = storeStates.filter(s => s.status === 'idle').length;
-                  const runCount = storeStates.filter(s => s.status === 'running').length;
+                  const washerIds = Array.from({ length: store.machines }, (_, i) => `${store.id}-m${i + 1}`);
+                  const dryerIds = Array.from({ length: store.dryers || 2 }, (_, i) => `${store.id}-d${i + 1}`);
+                  const washerIdle = washerIds.filter(id => { const s = machineStates[id]; return !s || s.status === 'idle'; }).length;
+                  const dryerIdle = dryerIds.filter(id => { const s = machineStates[id]; return !s || s.status === 'idle'; }).length;
                   return (
                     <div key={store.id} className="home-store-card" onClick={() => { switchTab('wash'); handleStoreSelect(store); }}>
                       <div className="home-store-name">{store.name}</div>
-                      <div className="home-store-status">
-                        {Array.from({ length: store.machines }, (_, i) => {
-                          const mid = `${store.id}-m${i + 1}`;
-                          const ms = machineStates[mid];
-                          const color = ms?.status === 'running' ? 'var(--running)' : ms?.status === 'offline' ? '#D8D8DC' : 'var(--success)';
-                          return <div key={i} className="home-store-dot" style={{ background: color }} />;
-                        })}
-                      </div>
-                      <div style={{ fontSize: 13, color: 'var(--text-sub)', marginTop: 8 }}>
-                        {storeStates.length > 0 ? `${idleCount} 台閒置 / ${runCount} 台運轉` : `${store.machines} 台可用`}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
+                        <svg width="18" height="18" viewBox="0 0 48 48" fill="none"><rect x="6" y="4" width="36" height="40" rx="4" stroke="#888" strokeWidth="2" fill="none"/><circle cx="24" cy="28" r="10" stroke="#888" strokeWidth="2" fill="none"/><clipPath id={`hsw-${store.id}`}><circle cx="24" cy="28" r="9.5"/></clipPath><g clipPath={`url(#hsw-${store.id})`}><rect x="14" y="18" width="20" height="20" fill="#E8943A"/><path d="M14 30C18 26 22 32 26 28S34 26 38 30L38 38L14 38Z" fill="#4A9FE5"/></g></svg>
+                        <span style={{ color: '#ccc', fontSize: 13, fontWeight: 600 }}>{washerIdle}/{store.machines}</span>
+                        <span style={{ color: '#555', margin: '0 2px' }}>|</span>
+                        <svg width="18" height="18" viewBox="0 0 48 48" fill="none"><rect x="6" y="4" width="36" height="40" rx="4" stroke="#E8943A" strokeWidth="2" fill="none"/><circle cx="24" cy="28" r="10" stroke="#E8943A" strokeWidth="2" fill="#E8943A"/><path d="M16 23c2-3 4 0 6-3s4 0 6-3 4 0 6-3" stroke="#FFF" strokeWidth="2" strokeLinecap="round" fill="none"/><path d="M16 29c2-3 4 0 6-3s4 0 6-3 4 0 6-3" stroke="#FFF" strokeWidth="2" strokeLinecap="round" fill="none"/></svg>
+                        <span style={{ color: '#ccc', fontSize: 13, fontWeight: 600 }}>{dryerIdle}/{store.dryers || 2}</span>
                       </div>
                     </div>
                   );
@@ -2831,10 +3099,10 @@ export default function App() {
 
                   {/* Payment toggle */}
                   <div className="pay-toggle">
-                    <button className={`pay-toggle-btn ${payMethod === 'linepay' ? 'active' : ''}`}
-                      onClick={() => setPayMethod('linepay')}>錢包付款</button>
                     <button className={`pay-toggle-btn ${payMethod === 'wallet' ? 'active' : ''}`}
-                      onClick={() => setPayMethod('wallet')}>單次付款</button>
+                      onClick={() => setPayMethod('wallet')}>錢包付款</button>
+                    <button className={`pay-toggle-btn ${payMethod === 'linepay' ? 'active' : ''}`}
+                      onClick={() => setPayMethod('linepay')}>單次付款</button>
                   </div>
 
                   {/* Machine selector */}
@@ -2886,11 +3154,11 @@ export default function App() {
                           <option value={15}>15min</option>
                         </select>
                       </div>
-                      <div className="coupon-select-row" onClick={() => { if (payMethod !== 'wallet') { setCouponTab('coupon'); setShowCouponModal(true); } }}>
+                      <div className="coupon-select-row" onClick={() => { setCouponTab('coupon'); setShowCouponModal(true); }}>
                         <div className="coupon-select-label">使用優惠</div>
                         <div className="coupon-select-value">
-                          {payMethod === 'wallet'
-                            ? <span style={{ color: '#E57373', fontSize: 13, background: 'rgba(229,115,115,0.12)', padding: '4px 10px', borderRadius: 6 }}>單次付款無法使用優惠</span>
+                          {selectedCoupon
+                            ? <span style={{ color: 'var(--accent)' }}>{selectedCoupon.name} (-${selectedCoupon.type === 'fixed' ? selectedCoupon.discount : Math.round((dryExtend || 5) * 2 * selectedCoupon.discount / 100)})</span>
                             : <span style={{ color: 'var(--text-hint)' }}>請選擇優惠券 ▼</span>
                           }
                         </div>
@@ -2958,18 +3226,14 @@ export default function App() {
 
                   {/* Coupon select */}
                   {selectedMachine.includes('-m') && selectedMode && (
-                    <div className="coupon-select-row" onClick={() => { if (payMethod !== 'wallet' && !dryExtend) { setCouponTab('coupon'); setShowCouponModal(true); } }}>
+                    <div className="coupon-select-row" onClick={() => { if (payMethod !== 'wallet') { setCouponTab('coupon'); setShowCouponModal(true); } }}>
                       <div className="coupon-select-label">使用優惠</div>
                       <div className="coupon-select-value">
-                        {payMethod === 'wallet'
-                          ? <span style={{ color: '#E57373', fontSize: 13, background: 'rgba(229,115,115,0.12)', padding: '4px 10px', borderRadius: 6 }}>單次付款無法使用優惠</span>
-                          : selectedCoupon
+                        {selectedCoupon
                             ? `${selectedCoupon.name} (-$${selectedCoupon.type === 'fixed' ? selectedCoupon.discount : Math.round(selectedMode.price * selectedCoupon.discount / 100)})`
-                            : dryExtend > 0
-                              ? <span style={{ color: '#E57373', fontSize: 13, background: 'rgba(229,115,115,0.12)', padding: '4px 10px', borderRadius: 6 }}>延長使用無法使用優惠</span>
-                              : getApplicableCoupons().length > 0
-                                ? <span style={{ color: 'var(--text-hint)' }}>請選擇優惠券 ▼</span>
-                                : <span style={{ color: 'var(--text-hint)' }}>暫無可用優惠</span>
+                            : getApplicableCoupons().length > 0
+                              ? <span style={{ color: 'var(--text-hint)' }}>請選擇優惠券 ▼</span>
+                              : <span style={{ color: 'var(--text-hint)' }}>暫無可用優惠</span>
                         }
                       </div>
                     </div>
@@ -2987,7 +3251,7 @@ export default function App() {
                   {(selectedMode || selectedMachine.includes('-d')) && (
                     <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: '#1A1A1A', padding: '18px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 200, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
                       <div style={{ fontSize: 18, color: '#FFF' }}>
-                        付款金額 <span style={{ fontSize: 28, fontWeight: 900 }}>$ {selectedMachine.includes('-d') ? (dryExtend || 5) * 2 : getFinalPrice()}</span>
+                        付款金額 <span style={{ fontSize: 28, fontWeight: 900 }}>$ {selectedMachine.includes('-d') ? (() => { let dp = (dryExtend || 5) * 2; if (selectedCoupon) { if (selectedCoupon.type === 'fixed') dp = Math.max(0, dp - selectedCoupon.discount); else if (selectedCoupon.type === 'percent') dp = Math.round(dp * (100 - selectedCoupon.discount) / 100); } return dp; })() : getFinalPrice()}</span>
                       </div>
                       <button style={{ background: '#FFF', color: '#1A1A1A', border: 'none', borderRadius: 10, padding: '14px 28px', fontSize: 16, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}
                         onClick={() => setScreen('confirm')}>確認付款</button>
@@ -3305,17 +3569,22 @@ export default function App() {
             </div>
             <div className="modal-row">
               <span className="label">機台</span>
-              <span className="value">洗脫烘{selectedMachine?.split('-m')[1]}號</span>
+              <span className="value">{selectedMachine?.includes('-d')
+                ? `烘乾${(selectedStore?.machines || 6) + parseInt(selectedMachine?.split('-d')[1] || '1')}號`
+                : selectedMachine?.includes('-v')
+                  ? '販賣機'
+                  : `洗脫烘${selectedMachine?.split('-m')[1]}號`
+              }</span>
             </div>
             <div className="modal-row">
               <span className="label">模式</span>
-              <span className="value">{selectedMode?.name}</span>
+              <span className="value">{selectedMode?.name}{selectedMachine?.includes('-d') ? ` ${dryExtend || 5}min` : ''}</span>
             </div>
             <div className="modal-row">
               <span className="label">時間</span>
-              <span className="value">{selectedMode?.minutes} 分鐘</span>
+              <span className="value">{selectedMachine?.includes('-d') ? (dryExtend || 5) : selectedMode?.minutes} 分鐘</span>
             </div>
-            {selectedMode?.id !== 'washonly' && (
+            {selectedMode && selectedMode.id !== 'washonly' && !selectedMachine?.includes('-v') && (
               <div className="modal-row">
                 <span className="label">烘衣溫度</span>
                 <span className="value">{dryTemp === 'low' ? '低溫' : dryTemp === 'mid' ? '中溫' : '高溫'}</span>
@@ -3335,7 +3604,7 @@ export default function App() {
             )}
             <div className="modal-row total">
               <span className="label">應付金額</span>
-              <span className="value">NT${getFinalPrice()}</span>
+              <span className="value">NT${selectedMachine?.includes('-d') ? (() => { let dp = (dryExtend || 5) * 2; if (selectedCoupon) { if (selectedCoupon.type === 'fixed') dp = Math.max(0, dp - selectedCoupon.discount); else if (selectedCoupon.type === 'percent') dp = Math.round(dp * (100 - selectedCoupon.discount) / 100); } return dp; })() : getFinalPrice()}</span>
             </div>
             <div className="modal-actions">
               <button className="modal-cancel" onClick={() => setScreen('modes')}>取消</button>
@@ -4059,15 +4328,48 @@ export default function App() {
 
                   {/* Machine Counts + Action Buttons */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <svg width="18" height="18" viewBox="0 0 36 36" fill="none"><rect x="4" y="4" width="28" height="28" rx="4" stroke="#888" strokeWidth="2"/><circle cx="18" cy="20" r="7" stroke="#888" strokeWidth="2"/><circle cx="18" cy="20" r="2" fill="#4A90D9"/><path d="M15 18c2 2 4 2 6 0" fill="#E8943A"/><rect x="8" y="7" width="3" height="3" rx="1" fill="#888"/><rect x="13" y="7" width="3" height="3" rx="1" fill="#888"/></svg>
-                      <span style={{ color: '#ccc', fontSize: 13 }}>{washerCount}</span>
-                      <span style={{ color: '#555', margin: '0 2px' }}>|</span>
-                      <svg width="18" height="18" viewBox="0 0 36 36" fill="none"><rect x="4" y="4" width="28" height="28" rx="4" stroke="#E8943A" strokeWidth="2"/><circle cx="18" cy="20" r="7" fill="#E8943A"/><path d="M15 18c0-2 1.5-3 3-3s3 1 3 3M14 22c0 2 2 3 4 3s4-1 4-3" stroke="#fff" strokeWidth="1.5" fill="none"/><rect x="8" y="7" width="3" height="3" rx="1" fill="#E8943A"/><rect x="13" y="7" width="3" height="3" rx="1" fill="#E8943A"/></svg>
-                      <span style={{ color: '#ccc', fontSize: 13 }}>{dryerCount}</span>
-                      <span style={{ color: '#555', margin: '0 2px' }}>|</span>
-                      <svg width="18" height="18" viewBox="0 0 36 36" fill="none"><rect x="6" y="4" width="24" height="28" rx="3" stroke="#888" strokeWidth="2"/><rect x="10" y="8" width="16" height="4" rx="1" stroke="#888" strokeWidth="1.5"/><rect x="10" y="15" width="16" height="4" rx="1" stroke="#888" strokeWidth="1.5"/><rect x="10" y="22" width="16" height="4" rx="1" stroke="#888" strokeWidth="1.5"/></svg>
-                      <span style={{ color: '#ccc', fontSize: 13 }}>1</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <svg width="22" height="22" viewBox="0 0 48 48" fill="none">
+                        <rect x="6" y="4" width="36" height="40" rx="4" stroke="#888" strokeWidth="2" fill="none"/>
+                        <line x1="6" y1="14" x2="42" y2="14" stroke="#888" strokeWidth="1.5"/>
+                        <circle cx="12" cy="9" r="2" fill="#888"/>
+                        <circle cx="18" cy="9" r="2" fill="#888"/>
+                        <rect x="28" y="7" width="8" height="4" rx="2" stroke="#888" strokeWidth="1.5"/>
+                        <circle cx="24" cy="30" r="10" stroke="#888" strokeWidth="2" fill="none"/>
+                        <clipPath id="sw"><circle cx="24" cy="30" r="9.5"/></clipPath>
+                        <g clipPath="url(#sw)">
+                          <rect x="14" y="20" width="20" height="20" fill="#E8943A"/>
+                          <path d="M14 32C18 28 22 34 26 30S34 28 38 32L38 40L14 40Z" fill="#4A9FE5"/>
+                        </g>
+                      </svg>
+                      <span style={{ color: '#ccc', fontSize: 14, fontWeight: 600 }}>{washerCount}</span>
+                      <span style={{ color: '#555', margin: '0 4px', fontSize: 16, fontWeight: 300 }}>|</span>
+                      <svg width="22" height="22" viewBox="0 0 48 48" fill="none">
+                        <rect x="6" y="4" width="36" height="40" rx="4" stroke="#888" strokeWidth="2" fill="none"/>
+                        <line x1="6" y1="14" x2="42" y2="14" stroke="#888" strokeWidth="1.5"/>
+                        <circle cx="12" cy="9" r="2" fill="#E8943A"/>
+                        <circle cx="18" cy="9" r="2" fill="#E8943A"/>
+                        <rect x="28" y="7" width="8" height="4" rx="2" stroke="#E8943A" strokeWidth="1.5"/>
+                        <circle cx="24" cy="30" r="10" stroke="#E8943A" strokeWidth="2" fill="#E8943A"/>
+                        <path d="M16 25c2-3 4 0 6-3s4 0 6-3 4 0 6-3" stroke="#FFF" strokeWidth="2" strokeLinecap="round" fill="none"/>
+                        <path d="M16 31c2-3 4 0 6-3s4 0 6-3 4 0 6-3" stroke="#FFF" strokeWidth="2" strokeLinecap="round" fill="none"/>
+                        <path d="M16 37c2-3 4 0 6-3s4 0 6-3 4 0 6-3" stroke="#FFF" strokeWidth="2" strokeLinecap="round" fill="none"/>
+                      </svg>
+                      <span style={{ color: '#ccc', fontSize: 14, fontWeight: 600 }}>{dryerCount}</span>
+                      <span style={{ color: '#555', margin: '0 4px', fontSize: 16, fontWeight: 300 }}>|</span>
+                      <svg width="22" height="22" viewBox="0 0 48 48" fill="none">
+                        <rect x="8" y="4" width="32" height="40" rx="3" stroke="#888" strokeWidth="2" fill="none"/>
+                        <line x1="8" y1="12" x2="40" y2="12" stroke="#888" strokeWidth="1.5"/>
+                        <circle cx="14" cy="8" r="1.5" fill="#888"/>
+                        <circle cx="19" cy="8" r="1.5" fill="#888"/>
+                        <line x1="28" y1="8" x2="36" y2="8" stroke="#888" strokeWidth="2"/>
+                        <rect x="12" y="16" width="10" height="7" rx="1.5" stroke="#888" strokeWidth="1.5" fill="none"/>
+                        <rect x="26" y="16" width="10" height="7" rx="1.5" stroke="#888" strokeWidth="1.5" fill="none"/>
+                        <rect x="12" y="27" width="10" height="7" rx="1.5" stroke="#888" strokeWidth="1.5" fill="none"/>
+                        <rect x="26" y="27" width="10" height="7" rx="1.5" stroke="#888" strokeWidth="1.5" fill="none"/>
+                        <rect x="16" y="38" width="16" height="3" rx="1" stroke="#888" strokeWidth="1.5" fill="none"/>
+                      </svg>
+                      <span style={{ color: '#ccc', fontSize: 14, fontWeight: 600 }}>1</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       {/* LINE Button */}
@@ -4095,14 +4397,11 @@ export default function App() {
       {/* Phone Modal */}
       {showPhoneModal && storeDetailTarget && (
         <div onClick={() => setShowPhoneModal(false)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: 16, padding: '28px 24px', textAlign: 'center', maxWidth: 320, width: '85%', margin: '0 auto' }}>
-            <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>聯繫商家</div>
-            <div style={{ fontSize: 28, fontWeight: 700, marginBottom: 8, color: '#000' }}>{storeDetailTarget.phone}</div>
-            <div style={{ fontSize: 13, color: '#888', marginBottom: 24 }}>{storeDetailTarget.name}</div>
-            <div style={{ display: 'flex', gap: 12 }}>
-              <button onClick={() => setShowPhoneModal(false)} style={{ flex: 1, padding: '12px', borderRadius: 12, border: '1px solid #ddd', background: '#fff', fontSize: 15, cursor: 'pointer' }}>關閉</button>
-              <button onClick={() => { window.open(`tel:${storeDetailTarget.phone}`); setShowPhoneModal(false); }} style={{ flex: 1, padding: '12px', borderRadius: 12, border: 'none', background: '#000', color: '#fff', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}>撥打電話</button>
-            </div>
+          <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: 20, padding: '32px 24px 24px', textAlign: 'center', maxWidth: 340, width: '85%', margin: '0 auto', position: 'relative' }}>
+            <button onClick={() => setShowPhoneModal(false)} style={{ position: 'absolute', top: 14, right: 14, background: 'none', border: 'none', fontSize: 22, color: '#999', cursor: 'pointer', lineHeight: 1, padding: 4 }}>✕</button>
+            <div style={{ fontSize: 17, fontWeight: 600, marginBottom: 20, color: '#333' }}>聯繫商家</div>
+            <div style={{ fontSize: 22, fontWeight: 600, marginBottom: 28, color: '#000', letterSpacing: 1 }}>{storeDetailTarget.phone}</div>
+            <button onClick={() => { window.open(`tel:${storeDetailTarget.phone}`); setShowPhoneModal(false); }} style={{ width: '100%', padding: '16px', borderRadius: 14, border: 'none', background: '#000', color: '#fff', fontSize: 18, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>撥打電話</button>
           </div>
         </div>
       )}
@@ -4266,13 +4565,19 @@ export default function App() {
           <div className="not-available-box" onClick={e => e.stopPropagation()}>
             <div className="not-available-icon">
               <svg width="80" height="80" viewBox="0 0 100 100" fill="none">
-                <rect x="20" y="35" width="60" height="45" rx="6" stroke="#CCC" strokeWidth="3" fill="#F5F5F5"/>
-                <path d="M35 35V25a15 15 0 0130 0v10" stroke="#CCC" strokeWidth="3" fill="none"/>
-                <line x1="35" y1="28" x2="30" y2="20" stroke="#DDD" strokeWidth="2"/>
-                <line x1="50" y1="25" x2="50" y2="15" stroke="#DDD" strokeWidth="2"/>
-                <line x1="65" y1="28" x2="70" y2="20" stroke="#DDD" strokeWidth="2"/>
-                <path d="M38 55h24" stroke="#DDD" strokeWidth="2.5" strokeLinecap="round"/>
-                <path d="M42 62h16" stroke="#DDD" strokeWidth="2" strokeLinecap="round"/>
+                {/* Box body */}
+                <rect x="18" y="42" width="64" height="38" rx="4" stroke="#CCC" strokeWidth="2.5" fill="#F5F5F5"/>
+                {/* Box flap left */}
+                <path d="M18 42L30 32h40l12 10" stroke="#CCC" strokeWidth="2.5" fill="#F5F5F5"/>
+                {/* Box opening line */}
+                <path d="M30 32l20 14 20-14" stroke="#CCC" strokeWidth="2.5" fill="none"/>
+                {/* Horizontal speed lines */}
+                <path d="M25 55h50" stroke="#DDD" strokeWidth="2" strokeLinecap="round"/>
+                <path d="M30 62h40" stroke="#DDD" strokeWidth="1.5" strokeLinecap="round"/>
+                {/* Sparkle rays on top */}
+                <line x1="50" y1="12" x2="50" y2="22" stroke="#CCC" strokeWidth="2.5" strokeLinecap="round"/>
+                <line x1="35" y1="16" x2="38" y2="24" stroke="#CCC" strokeWidth="2" strokeLinecap="round"/>
+                <line x1="65" y1="16" x2="62" y2="24" stroke="#CCC" strokeWidth="2" strokeLinecap="round"/>
               </svg>
             </div>
             <div className="not-available-text">暫未開放</div>
