@@ -2161,6 +2161,16 @@ export default function App() {
     return () => document.head.removeChild(style);
   }, []);
 
+  // ─── Save group param BEFORE LIFF init (LIFF login redirect will strip URL params) ───
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const groupParam = urlParams.get('group');
+    if (groupParam) {
+      localStorage.setItem('ypure_entryGroup', groupParam);
+      console.log('[Group] Saved entry group from URL:', groupParam);
+    }
+  }, []);
+
   // ─── LIFF Init ───
   useEffect(() => {
     const initLiff = async () => {
@@ -2178,28 +2188,8 @@ export default function App() {
               userId: profile.userId,
             };
             setUser(userData);
-            // Check URL for group parameter - try multiple sources since LIFF may strip params
-            const urlParams = new URLSearchParams(window.location.search);
-            let groupFromUrl = urlParams.get('group');
-            // Also check hash fragment (LIFF sometimes puts params there)
-            if (!groupFromUrl && window.location.hash) {
-              const hashParams = new URLSearchParams(window.location.hash.replace('#', '?'));
-              groupFromUrl = hashParams.get('group');
-            }
-            // Also try liff.getContext() for custom params
-            if (!groupFromUrl && window.liff) {
-              try {
-                const ctx = window.liff.getContext();
-                if (ctx?.liffUrl) {
-                  const liffUrlParams = new URLSearchParams(new URL(ctx.liffUrl).search);
-                  groupFromUrl = liffUrlParams.get('group');
-                }
-              } catch(e) {}
-            }
-            const entryGroupId = groupFromUrl || localStorage.getItem('ypure_entryGroup');
-            if (groupFromUrl) {
-              localStorage.setItem('ypure_entryGroup', groupFromUrl);
-            }
+            // Get group from localStorage (saved before LIFF init to survive redirects)
+            const entryGroupId = localStorage.getItem('ypure_entryGroup');
             // Fetch user profile from backend
             try {
               const profileUrl = `${API}/api/user/profile?userId=${profile.userId}${entryGroupId ? `&groupId=${entryGroupId}` : ''}&displayName=${encodeURIComponent(profile.displayName || '')}&pictureUrl=${encodeURIComponent(profile.pictureUrl || '')}`;
@@ -2767,12 +2757,14 @@ export default function App() {
   const [topupGroupId, setTopupGroupId] = useState(null);
   const handleTopup = () => {
     setSelectedTopup(null);
-    setTopupGroupId(currentGroupId || (storeGroups.length > 0 ? storeGroups[0].id : null));
+    setTopupGroupId(effectiveGroupId || currentGroupId || localStorage.getItem('ypure_entryGroup'));
     setShowTopupModal(true);
   };
 
   const doTopup = async (amount) => {
-    const gid = topupGroupId || effectiveGroupId || currentGroupId;
+    const gid = topupGroupId || effectiveGroupId || currentGroupId || localStorage.getItem('ypure_entryGroup');
+    console.log('[Topup] gid=', gid, 'amount=', amount, 'userId=', user?.userId);
+    if (!gid) { showToast('請先選擇門市'); return; }
     if (gid && user?.userId) {
       try {
         const res = await fetch(`${API}/api/wallet/topup`, {
@@ -2781,10 +2773,21 @@ export default function App() {
           body: JSON.stringify({ userId: user.userId, groupId: gid, amount }),
         });
         const data = await res.json();
+        console.log('[Topup] result:', data);
         if (data.success) {
           setGroupWallets(prev => ({ ...prev, [gid]: data.balance }));
+          // Also refresh the profile to get updated wallet
+          try {
+            const pr = await fetch(`${API}/api/user/profile?userId=${user.userId}&groupId=${gid}`);
+            const pd = await pr.json();
+            if (pd.wallets) setGroupWallets(pd.wallets);
+            if (pd.groups?.length > 0) { setStoreGroups(pd.groups); setCurrentGroupId(gid); }
+          } catch(e2) {}
+        } else {
+          showToast(data.error || '儲值失敗');
+          return;
         }
-      } catch (e) { console.error('Topup error:', e); }
+      } catch (e) { console.error('Topup error:', e); showToast('儲值失敗，請稍後再試'); return; }
     }
     // Also update local points as fallback
     setPoints(prev => prev + amount);
