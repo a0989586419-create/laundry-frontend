@@ -98,9 +98,12 @@ body {
 #root {
   min-height: 100vh;
   background:
-    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(200,168,78,0.06) 0%, transparent 50%),
-    radial-gradient(ellipse 60% 40% at 80% 20%, rgba(255,255,255,0.02) 0%, transparent 40%),
-    linear-gradient(180deg, #0C0C0C 0%, #080808 100%);
+    radial-gradient(ellipse 100% 60% at 50% -5%, rgba(200,168,78,0.07) 0%, transparent 50%),
+    radial-gradient(ellipse 80% 40% at 20% 10%, rgba(60,60,60,0.15) 0%, transparent 50%),
+    radial-gradient(ellipse 70% 50% at 80% 15%, rgba(40,40,40,0.12) 0%, transparent 50%),
+    radial-gradient(ellipse 90% 30% at 50% 50%, rgba(20,20,20,0.3) 0%, transparent 60%),
+    linear-gradient(180deg, #0E0E0E 0%, #080808 30%, #050505 100%);
+  background-attachment: fixed;
 }
 
 /* ═══ Loading Screen ═══ */
@@ -665,26 +668,27 @@ body {
 
 .home-grid {
   display: grid; grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto;
-  gap: 10px; margin-bottom: 20px;
+  grid-template-rows: 1fr 1fr;
+  gap: 10px; margin-bottom: 16px;
 }
 .home-grid-card {
   background: var(--card);
   backdrop-filter: blur(16px);
   border-radius: var(--radius-sm);
-  padding: 20px 16px;
+  padding: 18px 16px;
   box-shadow: var(--shadow);
   cursor: pointer;
   transition: transform 0.1s;
   border: 1px solid var(--card-border);
+  display: flex; flex-direction: column; justify-content: center;
 }
 .home-grid-card:active { transform: scale(0.97); }
-.home-grid-icon { margin-bottom: 12px; text-align: center; }
+.home-grid-icon { margin-bottom: 10px; text-align: center; }
 .home-grid-label {
-  font-size: 17px; font-weight: 700; color: var(--text);
+  font-size: 16px; font-weight: 700; color: var(--text);
 }
 .home-grid-sub {
-  font-size: 13px; color: var(--text-sub); margin-top: 4px;
+  font-size: 12px; color: var(--text-sub); margin-top: 3px;
 }
 
 .news-card {
@@ -1002,21 +1006,22 @@ body {
   backdrop-filter: blur(16px);
   border: 1px solid var(--card-border);
   border-radius: var(--radius-sm);
-  padding: 16px 8px; margin-bottom: 20px; box-shadow: var(--shadow);
+  padding: 18px 12px 14px; margin-bottom: 16px; box-shadow: var(--shadow);
 }
 .home-quick-item {
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
   background: none; border: none; cursor: pointer; font-family: inherit;
-  padding: 6px 8px; transition: transform 0.1s;
+  padding: 4px 8px; transition: transform 0.1s;
+  min-width: 64px;
 }
 .home-quick-item:active { transform: scale(0.93); }
 .home-quick-icon {
-  width: 44px; height: 44px; border-radius: 12px;
+  width: 48px; height: 48px; border-radius: 14px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 22px; border: 1px solid rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.12);
   background: rgba(255,255,255,0.04);
 }
-.home-quick-label { font-size: 12px; font-weight: 600; color: var(--text-sub); }
+.home-quick-label { font-size: 13px; font-weight: 600; color: var(--text-sub); white-space: nowrap; }
 
 /* ═══ Wash Addons ═══ */
 .addon-row {
@@ -1108,6 +1113,52 @@ body {
   font-size: 16px; font-family: inherit; color: var(--text);
 }
 .store-search-input::placeholder { color: var(--text-hint); }
+
+/* ═══ Store Dropdown ═══ */
+.store-dropdown {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.store-dropdown-selected {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 20px; cursor: pointer;
+  transition: background 0.15s;
+}
+.store-dropdown-selected:active { background: rgba(255,255,255,0.06); }
+.store-dropdown-name { font-size: 18px; font-weight: 700; color: var(--text); }
+.store-dropdown-addr { font-size: 13px; color: var(--text-sub); margin-top: 3px; }
+.store-dropdown-arrow {
+  font-size: 14px; color: var(--text-hint);
+  transition: transform 0.2s; flex-shrink: 0;
+}
+.store-dropdown-arrow.open { transform: rotate(180deg); }
+.store-dropdown-list {
+  border-top: 1px solid rgba(255,255,255,0.06);
+  max-height: 300px; overflow-y: auto;
+}
+.store-dropdown-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; cursor: pointer;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  transition: background 0.15s;
+}
+.store-dropdown-item:last-child { border-bottom: none; }
+.store-dropdown-item:active { background: rgba(255,255,255,0.06); }
+.store-dropdown-item.active { background: rgba(200,168,78,0.08); }
+.store-dropdown-item .sdi-name { font-size: 16px; font-weight: 600; color: var(--text); }
+.store-dropdown-item .sdi-addr { font-size: 12px; color: var(--text-sub); margin-top: 2px; }
+.store-dropdown-item .sdi-check {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.15);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 14px;
+}
+.store-dropdown-item.active .sdi-check {
+  background: var(--accent); border-color: var(--accent); color: #000;
+}
 
 /* ═══ Running Machine Banner ═══ */
 .running-banner {
@@ -1467,6 +1518,7 @@ export default function App() {
 
   const switchTab = (t) => { setTab(t); window.scrollTo({ top: 0, behavior: 'smooth' }); };
   const [storeSearch, setStoreSearch] = useState('');
+  const [storeDropdownOpen, setStoreDropdownOpen] = useState(true);
 
   const handleStoreSelect = (store) => {
     setSelectedStore(store);
@@ -1920,33 +1972,35 @@ export default function App() {
               {screen === 'stores' && (
                 <>
                   <div className="sec-title">選擇店家</div>
-                  <div className="store-search">
-                    <span className="store-search-icon">
-                      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="8" cy="8" r="5.5"/><line x1="12" y1="12" x2="16" y2="16"/></svg>
-                    </span>
-                    <input className="store-search-input" placeholder="請輸入門市名稱或地址"
-                      value={storeSearch} onChange={e => setStoreSearch(e.target.value)} />
-                  </div>
-                  <div className="store-scroll">
-                    {STORES.filter(s => !storeSearch || s.name.includes(storeSearch) || s.addr.includes(storeSearch)).map(store => (
-                      <div key={store.id} className="store-card"
-                        onClick={() => handleStoreSelect(store)}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-                          <div className="s-name">{store.name}</div>
-                          <IconWasher size={36} color="#555" />
+                  <div className="store-dropdown">
+                    <div className="store-dropdown-selected" onClick={() => setStoreDropdownOpen(!storeDropdownOpen)}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <IconWasher size={32} color="#888" />
+                          <div>
+                            <div className="store-dropdown-name">雲管家自助洗衣</div>
+                            <div className="store-dropdown-addr">請選擇門市</div>
+                          </div>
                         </div>
-                        <div className="s-addr" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="6" r="3" stroke="#C8A84E" strokeWidth="1.5"/><path d="M7 1C4.2 1 2 3.5 2 6.2 2 9.5 7 13 7 13s5-3.5 5-6.8C12 3.5 9.8 1 7 1z" stroke="#C8A84E" strokeWidth="1.5"/></svg>
-                          {store.addr}
-                        </div>
-                        <button className="store-select-btn" onClick={(e) => { e.stopPropagation(); handleStoreSelect(store); }}>
-                          選擇
-                        </button>
                       </div>
-                    ))}
-                    {STORES.filter(s => !storeSearch || s.name.includes(storeSearch) || s.addr.includes(storeSearch)).length === 0 && (
-                      <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-hint)', fontSize: 16, width: '100%' }}>
-                        找不到符合的門市
+                      <span className={`store-dropdown-arrow ${storeDropdownOpen ? 'open' : ''}`}>▼</span>
+                    </div>
+                    {storeDropdownOpen && (
+                      <div className="store-dropdown-list">
+                        {STORES.map(store => (
+                          <div key={store.id}
+                            className={`store-dropdown-item ${selectedStore?.id === store.id ? 'active' : ''}`}
+                            onClick={() => handleStoreSelect(store)}>
+                            <div>
+                              <div className="sdi-name">{store.name}</div>
+                              <div className="sdi-addr" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="6" r="3" stroke="#C8A84E" strokeWidth="1.5"/><path d="M7 1C4.2 1 2 3.5 2 6.2 2 9.5 7 13 7 13s5-3.5 5-6.8C12 3.5 9.8 1 7 1z" stroke="#C8A84E" strokeWidth="1.5"/></svg>
+                                {store.addr}
+                              </div>
+                            </div>
+                            <div className="sdi-check">{selectedStore?.id === store.id ? '✓' : ''}</div>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>
