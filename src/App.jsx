@@ -4079,7 +4079,7 @@ export default function App() {
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                       </button>
                       {/* Navigation Button */}
-                      <button onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${store.lat},${store.lng}`, '_blank')} style={{ display: 'flex', alignItems: 'center', gap: 4, background: '#333', border: 'none', borderRadius: 20, padding: '8px 12px', cursor: 'pointer' }}>
+                      <button onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(store.addr)}`, '_blank')} style={{ display: 'flex', alignItems: 'center', gap: 4, background: '#333', border: 'none', borderRadius: 20, padding: '8px 12px', cursor: 'pointer' }}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5.4 8 12 8 12s8-6.6 8-12a8 8 0 0 0-8-8z"/></svg>
                         <span style={{ color: '#fff', fontSize: 12 }}>到這裡去</span>
                       </button>
@@ -4096,7 +4096,7 @@ export default function App() {
       {showPhoneModal && storeDetailTarget && (
         <div onClick={() => setShowPhoneModal(false)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: 16, padding: '28px 24px', textAlign: 'center', maxWidth: 320, width: '85%', margin: '0 auto' }}>
-            <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>聯絡電話</div>
+            <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>聯繫商家</div>
             <div style={{ fontSize: 28, fontWeight: 700, marginBottom: 8, color: '#000' }}>{storeDetailTarget.phone}</div>
             <div style={{ fontSize: 13, color: '#888', marginBottom: 24 }}>{storeDetailTarget.name}</div>
             <div style={{ display: 'flex', gap: 12 }}>
