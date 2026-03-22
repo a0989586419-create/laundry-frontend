@@ -2149,28 +2149,37 @@ export default function App() {
     const initLiff = async () => {
       try {
         if (window.liff) {
-          // Add timeout to prevent hanging in non-LINE environments
           const liffInitPromise = window.liff.init({ liffId: LIFF_ID });
-          const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('LIFF init timeout')), 3000));
+          const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('LIFF init timeout')), 5000));
           await Promise.race([liffInitPromise, timeoutPromise]);
-          if (window.liff.isInClient() || window.liff.isLoggedIn()) {
-            if (!window.liff.isLoggedIn()) { window.liff.login(); return; }
+          if (window.liff.isLoggedIn()) {
+            // Already logged in — get profile
             const profile = await window.liff.getProfile();
             setUser({
               name: profile.displayName,
               picture: profile.pictureUrl,
               userId: profile.userId,
             });
+          } else if (window.liff.isInClient()) {
+            // In LINE app but not logged in — trigger login
+            window.liff.login();
+            return;
           } else {
-            // Not in LINE app — use dev mode
-            setUser({ name: '柏宏', picture: '', userId: 'dev-user' });
+            // External browser — redirect to LINE login
+            window.liff.login();
+            return;
           }
         } else {
-          setUser({ name: '柏宏', picture: '', userId: 'dev-user' });
+          // LIFF SDK not loaded — use generic guest mode
+          setUser({ name: '會員', picture: '', userId: `guest-${Date.now()}` });
         }
       } catch (err) {
         console.error('LIFF init error:', err);
-        setUser({ name: '柏宏', picture: '', userId: 'dev-user' });
+        // On error, try login if liff is available, otherwise guest mode
+        if (window.liff) {
+          try { window.liff.login(); return; } catch {}
+        }
+        setUser({ name: '會員', picture: '', userId: `guest-${Date.now()}` });
       }
       // Data already loaded via useState initializers from localStorage
       // Mark data as loaded so persistence useEffects can start saving
