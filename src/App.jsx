@@ -2147,16 +2147,8 @@ export default function App() {
   const [manualTopupAmount, setManualTopupAmount] = useState('');
   const [manualTopupDesc, setManualTopupDesc] = useState('');
 
-  const [usageHistory, setUsageHistory] = useState(() => lsGet('ypure_usageHistory', [
-    { id: 'h1', date: '2026-03-20 14:30', store: '悠洗自助洗衣', machine: '洗脫烘2號', mode: '洗脫烘-標準', amount: 160, status: 'completed' },
-    { id: 'h2', date: '2026-03-18 09:15', store: '熊愛洗自助洗衣', machine: '洗脫烘1號', mode: '只要洗衣', amount: 80, status: 'completed' },
-    { id: 'h3', date: '2026-03-15 18:00', store: '上好洗自助洗衣', machine: '洗脫烘4號', mode: '洗脫烘-強勁', amount: 180, status: 'completed' },
-  ]));
-  const [transactions, setTransactions] = useState(() => lsGet('ypure_transactions', [
-    { id: 't1', name: '儲值', date: '2026-03-20', amount: 500, type: 'topup' },
-    { id: 't2', name: '悠洗自助洗衣', date: '2026-03-20', amount: -160, type: 'payment' },
-    { id: 't3', name: '熊愛洗自助洗衣', date: '2026-03-18', amount: -80, type: 'payment' },
-  ]));
+  const [usageHistory, setUsageHistory] = useState(() => lsGet('ypure_usageHistory', []));
+  const [transactions, setTransactions] = useState(() => lsGet('ypure_transactions', []));
 
   // ─── Inject CSS ───
   useEffect(() => {
@@ -2183,9 +2175,12 @@ export default function App() {
               userId: profile.userId,
             };
             setUser(userData);
-            // Check URL for group parameter (e.g. ?group=sg2)
+            // Check URL for group parameter (e.g. ?group=sg2), or restore from localStorage
             const urlParams = new URLSearchParams(window.location.search);
-            const entryGroupId = urlParams.get('group');
+            const entryGroupId = urlParams.get('group') || localStorage.getItem('ypure_entryGroup');
+            if (urlParams.get('group')) {
+              localStorage.setItem('ypure_entryGroup', urlParams.get('group'));
+            }
             // Fetch user profile from backend
             try {
               const profileUrl = `${API}/api/user/profile?userId=${profile.userId}${entryGroupId ? `&groupId=${entryGroupId}` : ''}`;
@@ -2194,7 +2189,29 @@ export default function App() {
               console.log('[Profile]', profile.userId, profileData.role, profileData);
               if (profileData.role) setUserRole(profileData.role);
               if (profileData.managedGroupId) setManagedGroupId(profileData.managedGroupId);
-              if (profileData.wallets) setGroupWallets(profileData.wallets);
+              if (profileData.wallets) {
+                setGroupWallets(profileData.wallets);
+                // Sync local points with backend wallet balance
+                const gid = entryGroupId || (profileData.groups?.[0]?.id);
+                if (gid && profileData.wallets[gid] !== undefined) {
+                  setPoints(profileData.wallets[gid]);
+                }
+              }
+              // Fetch real transactions from backend
+              try {
+                const txRes = await fetch(`${API}/api/transactions?userId=${profile.userId}&limit=20`);
+                const txData = await txRes.json();
+                if (Array.isArray(txData) && txData.length > 0) {
+                  const mapped = txData.map(tx => ({
+                    id: `tx${tx.id}`,
+                    name: tx.description || tx.type,
+                    date: tx.created_at?.split('T')[0] || '',
+                    amount: tx.amount,
+                    type: tx.type,
+                  }));
+                  setTransactions(mapped);
+                }
+              } catch (e) { console.error('Tx fetch error:', e); }
               if (profileData.groups && profileData.groups.length > 0) {
                 setStoreGroups(profileData.groups);
                 // Use entry group if specified, otherwise first group
@@ -2861,7 +2878,7 @@ export default function App() {
               ══════════════════════════════════════ */}
           {tab === 'home' && (
             <>
-              {storeGroups.length > 1 && (
+              {storeGroups.length > 1 && (userRole === 'super_admin' || userRole === 'store_admin') && (
                 <div style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '0 0 12px', marginTop: 16 }}>
                   <button onClick={() => setCurrentGroupId(null)}
                     style={{
