@@ -2171,18 +2171,25 @@ export default function App() {
               userId: profile.userId,
             };
             setUser(userData);
+            // Check URL for group parameter (e.g. ?group=sg2)
+            const urlParams = new URLSearchParams(window.location.search);
+            const entryGroupId = urlParams.get('group');
             // Fetch user profile from backend
             try {
-              const profileRes = await fetch(`${API}/api/user/profile?userId=${profile.userId}`);
+              const profileUrl = `${API}/api/user/profile?userId=${profile.userId}${entryGroupId ? `&groupId=${entryGroupId}` : ''}`;
+              const profileRes = await fetch(profileUrl);
               const profileData = await profileRes.json();
               if (profileData.role) setUserRole(profileData.role);
               if (profileData.managedGroupId) setManagedGroupId(profileData.managedGroupId);
               if (profileData.wallets) setGroupWallets(profileData.wallets);
               if (profileData.groups && profileData.groups.length > 0) {
                 setStoreGroups(profileData.groups);
-                if (profileData.groups.length > 0) {
-                  setCurrentGroupId(profileData.groups[0].id);
-                }
+                // Use entry group if specified, otherwise first group
+                setCurrentGroupId(entryGroupId || profileData.groups[0].id);
+              }
+              // Clean URL params (keep clean)
+              if (entryGroupId) {
+                window.history.replaceState({}, '', window.location.pathname);
               }
             } catch (e) { console.error('Profile fetch error:', e); }
           } else if (window.liff.isInClient()) {
