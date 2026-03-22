@@ -2163,13 +2163,32 @@ export default function App() {
     return () => document.head.removeChild(style);
   }, []);
 
-  // ─── Save group param BEFORE LIFF init (LIFF login redirect will strip URL params) ───
+  // ─── Save group param BEFORE LIFF init ───
+  // LIFF redirects strip query params, so we check multiple sources:
+  // 1. ?group=sg4 (direct browser)
+  // 2. #sg4 (hash - survives LIFF redirects!)
+  // 3. /sg4 path segment
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const groupParam = urlParams.get('group');
+    let groupParam = urlParams.get('group');
+    // Check hash: #sg4 or #group=sg4
+    if (!groupParam && window.location.hash) {
+      const hash = window.location.hash.replace('#', '');
+      if (hash.startsWith('sg')) {
+        groupParam = hash;
+      } else {
+        const hashParams = new URLSearchParams(hash);
+        groupParam = hashParams.get('group');
+      }
+    }
+    // Check path: /sg4
+    if (!groupParam) {
+      const pathMatch = window.location.pathname.match(/\/(sg\d+)/);
+      if (pathMatch) groupParam = pathMatch[1];
+    }
     if (groupParam) {
       localStorage.setItem('ypure_entryGroup', groupParam);
-      console.log('[Group] Saved entry group from URL:', groupParam);
+      console.log('[Group] Saved entry group:', groupParam);
     }
   }, []);
 
@@ -2192,6 +2211,7 @@ export default function App() {
             setUser(userData);
             // Get group from localStorage (saved before LIFF init to survive redirects)
             const entryGroupId = localStorage.getItem('ypure_entryGroup');
+            console.log('[LIFF] entryGroupId from localStorage:', entryGroupId);
             // Fetch user profile from backend
             try {
               const profileUrl = `${API}/api/user/profile?userId=${profile.userId}${entryGroupId ? `&groupId=${entryGroupId}` : ''}&displayName=${encodeURIComponent(profile.displayName || '')}&pictureUrl=${encodeURIComponent(profile.pictureUrl || '')}`;
