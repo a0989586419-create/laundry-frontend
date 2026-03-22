@@ -1705,6 +1705,33 @@ function ClockIcon() {
 }
 
 // Washer SVG icon
+function ModeIcon({ mode, size = 28 }) {
+  const s = size;
+  if (mode === 'washonly') {
+    return <svg width={s} height={s} viewBox="0 0 28 28"><circle cx="14" cy="14" r="10" fill="#5AC8FA"/></svg>;
+  }
+  if (mode === 'dryonly') {
+    return <svg width={s} height={s} viewBox="0 0 28 28"><circle cx="14" cy="14" r="10" fill="#FF3B30"/></svg>;
+  }
+  // Washer drum icon for wash+dry modes
+  const colors = {
+    standard: ['#E8943A', '#4A9FE5'],
+    small: ['#FFBF60', '#4A9FE5'],
+    soft: ['#C7A640', '#4A9FE5'],
+    strong: ['#FF6B2B', '#4A9FE5'],
+  };
+  const [top, bottom] = colors[mode] || ['#E8943A', '#4A9FE5'];
+  return (
+    <svg width={s} height={s} viewBox="0 0 28 28" fill="none">
+      <clipPath id={`m-${mode}-${s}`}><circle cx="14" cy="14" r="10" /></clipPath>
+      <g clipPath={`url(#m-${mode}-${s})`}>
+        <rect x="4" y="4" width="20" height="20" fill={top} />
+        <path d="M4 16 C8 13, 12 18, 14 15 S20 13, 24 16 L24 24 L4 24 Z" fill={bottom} />
+      </g>
+      <circle cx="14" cy="14" r="10" stroke="rgba(0,0,0,0.1)" strokeWidth="1" fill="none" />
+    </svg>
+  );
+}
 function WasherIcon({ running, size = 36 }) {
   const s = size;
   return (
@@ -2791,7 +2818,7 @@ export default function App() {
                       <div key={mode.id}
                         className={`mode-cell ${selectedMode?.id === mode.id ? 'selected' : ''}`}
                         onClick={() => { setSelectedMode(mode); setSelectedCoupon(null); }}>
-                        <div className="mode-dot" style={{ background: mode.color }} />
+                        <ModeIcon mode={mode.id} size={28} />
                         <div className="mode-cell-name">{mode.name}</div>
                       </div>
                     ))}
